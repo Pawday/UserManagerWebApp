@@ -1,21 +1,28 @@
 import {Response} from "express";
+import assert from "assert";
 
 
 export enum APIErrorType
 {
     UNKNOWN_ERROR,
     INVALID_PARAMS,
+    DATABASE_ERROR
 }
 
 export class APIError
 {
-    private errorType: APIErrorType;
-    private errorString: string;
+    private readonly errorType: APIErrorType;
+    private readonly errorString: string;
 
     constructor(errorType: APIErrorType, errorString: string)
     {
         this.errorType = errorType;
         this.errorString = errorString;
+    }
+
+    public GetErrorType() : APIErrorType
+    {
+        return this.errorType;
     }
 }
 
@@ -47,11 +54,26 @@ export class APIResponse
         });
     }
 
+    private GetHttpCode(): number
+    {
+        if (!this._error) return 200;
+
+        switch (this._error.GetErrorType())
+        {
+            case APIErrorType.UNKNOWN_ERROR:
+            case APIErrorType.DATABASE_ERROR: return 500;
+
+            case APIErrorType.INVALID_PARAMS: return 400;
+        }
+
+        assert("Not handled map APIErrorType to HTTPCode");
+    }
+
     public SendTo(resp: Response)
     {
         resp.setHeader("Content-Type", "application/json");
+        resp.statusCode = this.GetHttpCode();
         resp.send(this.ToJSONString());
-        resp.statusCode = this._error ? 400 : 200;
         resp.end();
     }
 }

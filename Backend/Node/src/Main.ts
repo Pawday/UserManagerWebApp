@@ -1,6 +1,6 @@
 import Express from 'express';
 
-import APIRouter from "./APIRouter";
+import APIRouter from "./api/APIRouter";
 import NotApiCallHandler from "./NotApiCallHandler";
 
 import MongooseInit from "./MongooseInit";
