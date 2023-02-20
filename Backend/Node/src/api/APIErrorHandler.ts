@@ -7,7 +7,7 @@ function APIErrorHandler(err: Error, req: Request, resp: Response, next: NextFun
 
     if (err.name === "SyntaxError")
     {
-        apiResp.error = new APIError(APIErrorType.INVALID_PARAMS, "Params parse Syntax Error");
+        apiResp.error = new APIError(APIErrorType.INVALID_INPUT, "Params parse Syntax Error");
         apiResp.SendTo(resp);
         return;
     }

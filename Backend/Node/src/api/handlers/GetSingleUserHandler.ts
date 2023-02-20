@@ -14,7 +14,7 @@ async function GetSingleUserHandler(req: Request, resp: Response)
     {
         if (e.name === "CastError")
         {
-            apiResp.error = new APIError(APIErrorType.INVALID_PARAMS, "Specified invalid \"user id\"")
+            apiResp.error = new APIError(APIErrorType.INVALID_INPUT, "Specified invalid \"user id\"")
             apiResp.SendTo(resp);
             return;
         }

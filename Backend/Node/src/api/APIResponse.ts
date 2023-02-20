@@ -5,7 +5,7 @@ import assert from "assert";
 export enum APIErrorType
 {
     UNKNOWN_ERROR,
-    INVALID_PARAMS,
+    INVALID_INPUT,
     DATABASE_ERROR,
     AUTHORIZE_ERROR
 }
@@ -63,7 +63,7 @@ export class APIResponse
         {
             case APIErrorType.UNKNOWN_ERROR:
             case APIErrorType.DATABASE_ERROR: return 500;
-            case APIErrorType.INVALID_PARAMS: return 400;
+            case APIErrorType.INVALID_INPUT: return 400;
             case APIErrorType.AUTHORIZE_ERROR: return 403;
         }
 

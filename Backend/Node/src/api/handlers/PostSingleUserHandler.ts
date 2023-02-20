@@ -1,43 +1,88 @@
 import {APIError, APIErrorType, APIResponse} from "../APIResponse";
 import UserModel from "../models/UserModel";
+import {UserGender} from "../models/UserModel";
 import {Request, Response} from "express";
+
+
+export function SendInputNotProvidedError(resp: Response, fiendName: string)
+{
+    let apiResponse: APIResponse = new APIResponse();
+
+    let errorString = `request field \"${fiendName}\" should be defined`;
+    apiResponse.error =  new APIError(APIErrorType.INVALID_INPUT, errorString);
+    apiResponse.SendTo(resp);
+    return;
+}
+
+export function SendInputInvalidError(resp: Response, fiendName: string)
+{
+    let apiResponse: APIResponse = new APIResponse();
+
+    let errorString = `provided field \"${fiendName}\" is not valid`;
+    apiResponse.error =  new APIError(APIErrorType.INVALID_INPUT, errorString);
+    apiResponse.SendTo(resp);
+    return;
+}
+
 
 function PostSingleUserHandler(req: Request, resp: Response)
 {
     let apiResponse: APIResponse = new APIResponse();
 
-    let userName = req.body.name;
-    let userEmail = req.body.email;
+    let userName: string = req.body.name;
+    let userEmail: string = req.body.email;
+    let userPhone: string = req.body.phone;
+    let userGender: UserGender = req.body.gender;
 
-    if (!userName)
+
+    if (userName == null)
     {
-        let errorString = "request field \"name\" should be defined";
-        apiResponse.error =  new APIError(APIErrorType.INVALID_PARAMS, errorString);
-        apiResponse.SendTo(resp);
+        SendInputNotProvidedError(resp, "name");
         return;
     }
 
-    if (!userEmail)
+    if (userEmail == null)
     {
-        let errorString = "request field \"email\" should be defined";
-        apiResponse.error = new APIError(APIErrorType.INVALID_PARAMS, errorString);
-        apiResponse.SendTo(resp);
+        SendInputNotProvidedError(resp, "email");
         return;
     }
+
+    if (userPhone == null)
+    {
+        SendInputNotProvidedError(resp, "phone");
+        return;
+    }
+
+    if (userGender == null)
+    {
+        SendInputNotProvidedError(resp, "gender");
+        return;
+    }
+
+    let validatedGender = UserGender[userGender];
+
+    if (!validatedGender)
+    {
+        SendInputInvalidError(resp, "gender");
+        return;
+    }
+
 
     let user = new UserModel(
         {
             name: userName,
-            email: userEmail
+            email: userEmail,
+            phone: userPhone,
+            gender: userGender
         });
 
     user.save().then(() =>
     {
         apiResponse.response = "Success";
         apiResponse.SendTo(resp);
-    }).catch(() =>
+    }).catch((e: Error) =>
     {
-        apiResponse.error = new APIError(APIErrorType.DATABASE_ERROR, "User saving error");
+        apiResponse.error = new APIError(APIErrorType.DATABASE_ERROR, `User saving error: ${e.message}`);
         apiResponse.SendTo(resp);
     });
 
