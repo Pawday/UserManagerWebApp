@@ -1,23 +1,28 @@
 import Express from "express";
 import BodyParser from "body-parser";
 
-import ErrorHandler from "./ErrorHandler";
+import APIErrorHandler from "./APIErrorHandler";
 
-import PostSingleUserHandler from "./post/PostSingleUserHandler";
-import GetUsersHandler from "./get/GetUsersHandler";
-import GetSingleUserHandler from "./get/GetSingleUserHandler";
-import GetMultipleUsersHandler from "./post/GetMultipleUsersHandler";
+
+import TokenAuthorization from "./authorize/TokenAuthorization";
+import AdminAuthorization from "./authorize/AdminAuthorization"
+
+import PostSingleUserHandler from "./handlers/PostSingleUserHandler";
+import GetSingleUserHandler from "./handlers/GetSingleUserHandler";
+import GetMultipleUsersHandler from "./handlers/GetMultipleUsersHandler";
+import GetAllUsersIDSHandler from "./handlers/GetAllUsersIDSHandler";
+
 
 const APIRouter = Express.Router();
 
-APIRouter.use(ErrorHandler);
+APIRouter.use(APIErrorHandler);
 APIRouter.use(BodyParser.json({limit : "10mb"}));
 
-APIRouter.get("/users", GetUsersHandler);
-APIRouter.get("/user/:id", GetSingleUserHandler);
 
-APIRouter.post("/user", PostSingleUserHandler);
-APIRouter.post("/users", GetMultipleUsersHandler); //JSON payload for multiple users ids
+APIRouter.post("/user/:id", TokenAuthorization, AdminAuthorization, GetSingleUserHandler);
+APIRouter.post("/user", TokenAuthorization, AdminAuthorization, PostSingleUserHandler);
+APIRouter.post("/users", TokenAuthorization, AdminAuthorization, GetMultipleUsersHandler);
+APIRouter.post("/users/ids", TokenAuthorization, AdminAuthorization, GetAllUsersIDSHandler);
 
 
 

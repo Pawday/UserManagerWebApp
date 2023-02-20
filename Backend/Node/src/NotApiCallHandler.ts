@@ -8,6 +8,7 @@ const ResponseString: string = "Bad request,\n url should begin with /api";
 NotApiCallHandler.all("*", (req, resp) =>
 {
     resp.send(ResponseString);
+    resp.statusCode = 400;
     resp.end();
 })
 

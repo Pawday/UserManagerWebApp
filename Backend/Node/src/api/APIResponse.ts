@@ -6,7 +6,8 @@ export enum APIErrorType
 {
     UNKNOWN_ERROR,
     INVALID_PARAMS,
-    DATABASE_ERROR
+    DATABASE_ERROR,
+    AUTHORIZE_ERROR
 }
 
 export class APIError
@@ -62,8 +63,8 @@ export class APIResponse
         {
             case APIErrorType.UNKNOWN_ERROR:
             case APIErrorType.DATABASE_ERROR: return 500;
-
             case APIErrorType.INVALID_PARAMS: return 400;
+            case APIErrorType.AUTHORIZE_ERROR: return 403;
         }
 
         assert("Not handled map APIErrorType to HTTPCode");

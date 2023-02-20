@@ -1,7 +1,7 @@
-import {Request, Response} from "express";
+import {NextFunction, Request, Response} from "express";
 import {APIError, APIErrorType, APIResponse} from "./APIResponse";
 
-function ErrorHandler(err: Error, req: Request, resp: Response)
+function APIErrorHandler(err: Error, req: Request, resp: Response, next: NextFunction)
 {
     let apiResp: APIResponse = new APIResponse();
 
@@ -17,6 +17,7 @@ function ErrorHandler(err: Error, req: Request, resp: Response)
     apiResp.SendTo(resp);
 
     console.error(err.stack);
+    next();
 }
 
-export default ErrorHandler;
+export default APIErrorHandler;
