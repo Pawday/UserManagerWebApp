@@ -2,30 +2,10 @@ import {APIError, APIErrorType, APIResponse} from "../APIResponse";
 import UserModel from "../models/UserModel";
 import {UserGender} from "../models/UserModel";
 import {Request, Response} from "express";
+import {SendInputInvalidError, SendInputNotProvidedError} from "./ResponseUtils";
 
 
-export function SendInputNotProvidedError(resp: Response, fiendName: string)
-{
-    let apiResponse: APIResponse = new APIResponse();
-
-    let errorString = `request field \"${fiendName}\" should be defined`;
-    apiResponse.error =  new APIError(APIErrorType.INVALID_INPUT, errorString);
-    apiResponse.SendTo(resp);
-    return;
-}
-
-export function SendInputInvalidError(resp: Response, fiendName: string)
-{
-    let apiResponse: APIResponse = new APIResponse();
-
-    let errorString = `provided field \"${fiendName}\" is not valid`;
-    apiResponse.error =  new APIError(APIErrorType.INVALID_INPUT, errorString);
-    apiResponse.SendTo(resp);
-    return;
-}
-
-
-function PostSingleUserHandler(req: Request, resp: Response)
+async function PostSingleUserHandler(req: Request, resp: Response)
 {
     let apiResponse: APIResponse = new APIResponse();
 

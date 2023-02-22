@@ -9,11 +9,11 @@ import UserModel from "../models/UserModel";
 async function GetMultipleUsersHandler(req: Request, resp: Response)
 {
     let apiResp: APIResponse = new APIResponse();
-    let usersIdsArray: Array<string> = req.body.users;
+    let usersIdsArray: Array<string> = req.body.user_ids;
 
     if (!usersIdsArray || !TypeTools.IsArray(usersIdsArray))
     {
-        apiResp.error = new APIError(APIErrorType.INVALID_INPUT, "Array \"users\" with user ids should be defined");
+        apiResp.error = new APIError(APIErrorType.INVALID_INPUT, "Array \"user_ids\" with user ids should be defined");
         apiResp.SendTo(resp);
     }
 
@@ -29,7 +29,7 @@ async function GetMultipleUsersHandler(req: Request, resp: Response)
         }
         catch (e: any)
         {
-            apiResp.error = new APIError(APIErrorType.INVALID_INPUT, `Id with index ${i} is not valid`);
+            apiResp.error = new APIError(APIErrorType.INVALID_INPUT, `users_ids[${i}] is not valid`);
             apiResp.SendTo(resp)
             return;
         }
@@ -38,7 +38,7 @@ async function GetMultipleUsersHandler(req: Request, resp: Response)
     //https://stackoverflow.com/questions/8303900/mongodb-mongoose-findmany-find-all-documents-with-ids-listed-in-array
     let usersFound = await UserModel.find({"_id" : {$in: validatedUserIdList}}).catch(() =>
     {
-        apiResp.error = new APIError(APIErrorType.DATABASE_ERROR, "User searching error");
+        apiResp.error = new APIError(APIErrorType.INVALID_INPUT, "Users searching error");
         apiResp.SendTo(resp);
     });
 

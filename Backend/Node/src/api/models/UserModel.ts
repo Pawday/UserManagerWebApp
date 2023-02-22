@@ -1,4 +1,5 @@
-import mongoose from "mongoose";
+import mongoose, {Schema} from "mongoose";
+import UserAdditionalInfoModel from "./UserAdditionalInfoModel";
 
 
 // It wold be hard to manage boolean like isMan or isWoman
@@ -18,7 +19,12 @@ export const UserSchema = new mongoose.Schema(
     {
         type: Number,
         enum: UserGender
-    }
+    },
+    additionalInfo:
+        {
+            type: Schema.Types.ObjectId,
+            ref: UserAdditionalInfoModel.name
+        }
 });
 
 

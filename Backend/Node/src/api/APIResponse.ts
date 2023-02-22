@@ -7,7 +7,8 @@ export enum APIErrorType
     UNKNOWN_ERROR,
     INVALID_INPUT,
     DATABASE_ERROR,
-    AUTHORIZE_ERROR
+    AUTHORIZE_ERROR,
+    NOT_FOUND_ERROR
 }
 
 export class APIError
@@ -65,13 +66,18 @@ export class APIResponse
             case APIErrorType.DATABASE_ERROR: return 500;
             case APIErrorType.INVALID_INPUT: return 400;
             case APIErrorType.AUTHORIZE_ERROR: return 403;
+            case APIErrorType.NOT_FOUND_ERROR: return 404;
         }
 
-        assert("Not handled map APIErrorType to HTTPCode");
+        throw Error("Not handled map APIErrorType to HTTPCode");
     }
 
     public SendTo(resp: Response)
     {
+        // I love how asynchronous js nature awaited via deep callstack and special flags
+        // I mean if some callback already send the response there is no way it wold be handled by the framework
+        if (resp.headersSent) return;
+
         resp.setHeader("Content-Type", "application/json");
         resp.statusCode = this.GetHttpCode();
         resp.send(this.ToJSONString());

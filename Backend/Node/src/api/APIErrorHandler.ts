@@ -5,6 +5,7 @@ function APIErrorHandler(err: Error, req: Request, resp: Response, next: NextFun
 {
     let apiResp: APIResponse = new APIResponse();
 
+
     if (err.name === "SyntaxError")
     {
         apiResp.error = new APIError(APIErrorType.INVALID_INPUT, "Params parse Syntax Error");
