@@ -7,6 +7,7 @@ function Main()
 {
     let appMountElement = document.createElement("div");
     appMountElement.id = "mount";
+    appMountElement.style.height = "100vh";
     document.body.appendChild(appMountElement);
     document.body.style.margin = "0";
     document.body.style.padding = "0";
@@ -16,6 +17,6 @@ function Main()
     root.render(<Application />)
 }
 
-console.log("Launching app")
+console.log("Launching application")
 
 document.addEventListener("DOMContentLoaded", Main);
