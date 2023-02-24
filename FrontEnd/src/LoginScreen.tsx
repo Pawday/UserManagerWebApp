@@ -1,8 +1,8 @@
 import React from "react";
 
 import {set_token_event} from "./Application";
-import {createEvent, createStore} from "effector";
-import {Button, Container, FormGroup, FormLabel, Input, InputLabel, TextField} from "@mui/material";
+import {createEffect, createEvent, createStore} from "effector";
+import {Button, Container, FormGroup, FormLabel, TextField} from "@mui/material";
 import {UserLoginCredentials} from "./UserLoginCredentials";
 import {useStore} from "effector-react";
 
@@ -16,14 +16,25 @@ class FormState
 
     private readonly _formMessage: string;
 
+    private _formAvailable: boolean;
 
-    constructor(isUserValid: boolean, userInputErrorMassage: string, isPasswordValid: boolean, passwordInputErrorMassage: string, formMessage: string)
+
+    constructor
+    (
+        isUserValid: boolean,
+        userInputErrorMassage: string,
+        isPasswordValid: boolean,
+        passwordInputErrorMassage: string,
+        formMessage: string,
+        formAvailable: boolean
+    )
     {
         this._isUserValid = isUserValid;
         this._userInputHint = userInputErrorMassage;
         this._isPasswordValid = isPasswordValid;
         this._passwordInputHint = passwordInputErrorMassage;
         this._formMessage = formMessage;
+        this._formAvailable = formAvailable;
     }
 
 
@@ -51,6 +62,11 @@ class FormState
     {
         return this._passwordInputHint;
     }
+
+    get formAvailable(): boolean
+    {
+        return this._formAvailable;
+    }
 }
 
 const defaultCredentials: UserLoginCredentials = new UserLoginCredentials();
@@ -60,9 +76,20 @@ const loginUpdate = createEvent<string>("update_login");
 const passwordUpdate = createEvent<string>("update_password");
 const submitFormEvent = createEvent<void>("form_submit");
 
-const formStateStore = createStore<FormState>(new FormState(true,"", true, "", ""));
+const formStateStore = createStore<FormState>(new FormState(true,"", true, "", "", true));
 
 const formStateUpdateEvent = createEvent<FormState>("update_form_state");
+
+function sleep(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+const wait = createEffect(async () =>
+{
+    await sleep(2000);
+    return;
+});
+
 
 userLoginCredentialsStore
     .on(loginUpdate, (state, newLogin) =>
@@ -76,31 +103,37 @@ userLoginCredentialsStore
     {
         if (!credentials.isFilled)
         {
-            formStateUpdateEvent(new FormState(false,"", false, "", "Заполни форму ПОЛНОСТЬЮ"));
+            formStateUpdateEvent(new FormState(false,"", false, "", "Заполни форму ПОЛНОСТЬЮ", true));
             return;
         }
 
-        formStateUpdateEvent(new FormState(true, "", true, "", "Пробуем войти"));
+        formStateUpdateEvent(new FormState(true, "", true, "", "Пробуем войти", true));
 
         if (credentials.userLogin !== "admin")
         {
-            formStateUpdateEvent(new FormState(false, "Пока что только admin", true, "", ""));
+            formStateUpdateEvent(new FormState(false, "Пока что только admin", true, "", "", true));
             return;
         }
 
         if (credentials.userPassword === "admin")
         {
-            formStateUpdateEvent(new FormState(true, "", false, "Пароль точно не admin, уверяю", ""));
+            formStateUpdateEvent(new FormState(true, "", false, "Пароль точно не admin, уверяю", "", true));
             return;
         }
 
-        //TODO: make request
+        wait.call({});
 
-        set_token_event(credentials.userLogin);
     });
 
+wait.watch(() =>
+{
+    formStateUpdateEvent(new FormState(true, "", true, "", "Выполняем вход", false));
+});
 
-
+wait.done.watch(() =>
+{
+    set_token_event("Token");
+});
 
 formStateStore
     .on(formStateUpdateEvent, (state, newState) =>
@@ -132,20 +165,34 @@ function LoginScreen()
                 submitFormEvent();
         }}>
             <FormLabel>{formState.formMessage}</FormLabel>
-            <TextField sx={{
-                transitionDuration : ".5",
-                transitionProperty : "all"
-            }} error={!formState.isUserValid} helperText={formState.userInputHint} onChange={event =>
-            {
-                loginUpdate(event.target.value);
-            }} margin={"dense"} id="login-login" label="Логин" variant="outlined" />
+            <TextField
+                error={!formState.isUserValid} helperText={formState.userInputHint} onChange={event =>
+                {
+                    loginUpdate(event.target.value);
+                }}
+                margin={"dense"} id="login-login" label="Логин" variant="outlined"
+                disabled={!formState.formAvailable}
+            />
 
-            <TextField error={!formState.isPasswordValid} helperText={formState.passwordInputHint} onChange={(event) =>
-            {
-                passwordUpdate(event.target.value);
-            }} margin={"dense"} id="login-password" type="password" label="Пароль" variant="outlined" />
+            <TextField
+                error={!formState.isPasswordValid}
+                helperText={formState.passwordInputHint}
+                onChange={(event) =>
+                {
+                    passwordUpdate(event.target.value);
+                }}
+                margin={"dense"} id="login-password"
+                type="password"
+                label="Пароль"
+                variant="outlined"
+                disabled={!formState.formAvailable}
+            />
 
-            <Button onClick={() => {submitFormEvent()}} variant={"contained"}> Войти </Button>
+            <Button
+                onClick={() => {submitFormEvent()}}
+                variant={"contained"}
+                disabled={!formState.formAvailable}
+            > Войти </Button>
 
         </FormGroup>
 
