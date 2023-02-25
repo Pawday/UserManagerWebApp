@@ -15,12 +15,32 @@ class InMemoryDatabase implements IDatabase
     private readonly _options: SelectableOption[];
     private readonly _optionGroups: SelectableOptionGroup[];
 
+    private _isConnected: boolean;
+
     constructor()
     {
+        this._isConnected = true;
+
         this._users = new Array<User>();
         this._usersAdditionalInfos = new Array<UserAdditionalInfo>();
         this._options = new Array<SelectableOption>();
         this._optionGroups = new Array<SelectableOptionGroup>();
+    }
+
+    CheckConnection(): boolean
+    {
+        return this._isConnected;
+    }
+
+    ConvertToDBEntityIDFrom<Type>(value: Type): DBEntityID | null
+    {
+        if (typeof(value) !== "string") return null;
+
+        let number = parseInt(value);
+
+        if (isNaN(number)) return null;
+
+        return new InMemoryDBEntityId(number);
     }
 
     AddUser(user: User): DBEntityID | null
@@ -35,16 +55,17 @@ class InMemoryDatabase implements IDatabase
         return this._users[id.id];
     }
 
-    GetUsersByIds(id: DBEntityID[]): User[] | null
+    GetUsersByIds(usersIDs: InMemoryDBEntityId[]): User[] | null
     {
-        if (id.length > this._users.length) return null;
+        if (usersIDs.length > this._users.length) return null;
 
+        // Hello O(n^2)
         let foundUsers = this._users.filter((_, userIndex) =>
         {
-            return id.find((_, index) => {return index === userIndex});
+            return usersIDs.find((userID) => {return userID.id === userIndex});
         });
 
-        if (foundUsers.length != id.length) return null;
+        if (foundUsers.length != usersIDs.length) return null;
 
         return foundUsers;
     }
@@ -124,6 +145,25 @@ class InMemoryDatabase implements IDatabase
         return this._options.map((_, index) => new InMemoryDBEntityId(index));
     }
 
+    GetOptionById(optionId: InMemoryDBEntityId): SelectableOption | null
+    {
+        if (this._options.length <= optionId.id) return null;
+        return this._options[optionId.id];
+    }
+
+    GetOptionsByIDs(optionIDs: InMemoryDBEntityId[]): SelectableOption[] | null
+    {
+        if (optionIDs.length > this._options.length) return null;
+
+        // O(n^2) in one line -> looks cool but unreadable
+        let foundOptions = optionIDs.map(optionDBId => (this._options.find((_, optionIndex) => (optionDBId.id == optionIndex))));
+
+        if (foundOptions.findIndex(value => value === undefined) !== -1) return null;
+
+        return foundOptions as Array<SelectableOption>;
+    }
+
+
     AddOptionsGroup(group: SelectableOptionGroup): DBEntityID | null
     {
         const index = this._optionGroups.push(group);
@@ -143,11 +183,11 @@ class InMemoryDatabase implements IDatabase
         const optionToBind = this._options[optionID.id];
 
 
-        const existingOption: SelectableOption | undefined = this._optionGroups[optionGroupID.id].options.find(value => {
+        const existingOptionInGroup: SelectableOption | undefined = this._optionGroups[optionGroupID.id].options.find(value => {
             return value.name === optionToBind.name;
         });
 
-        if (existingOption !== undefined) return false;
+        if (existingOptionInGroup !== undefined) return false;
 
         let optionGroupBindTo = this._optionGroups[optionGroupID.id];
 
@@ -159,4 +199,31 @@ class InMemoryDatabase implements IDatabase
 
         return true;
     }
+
+    BindOptionToUser(optionID: InMemoryDBEntityId, userId: InMemoryDBEntityId): boolean
+    {
+        if (this._options.length <= optionID.id) return false;
+        if (this._users.length <= userId.id) return false;
+
+        const optionToBind = this._options[optionID.id];
+
+        let usersAdditionalInfo = this._users[userId.id].additionalInfo;
+
+        if (usersAdditionalInfo === null) return false;
+
+        const existingOptionInUser: SelectableOption | undefined = usersAdditionalInfo.options.find(value => {
+            return value.name === optionToBind.name;
+        });
+
+        if (existingOptionInUser !== undefined) return false;
+
+        let newUserInfo = new UserAdditionalInfo(
+            usersAdditionalInfo.aboutString,
+            [...usersAdditionalInfo.options, optionToBind]
+        );
+
+        return this.EditUserAdditionalInfo(userId, newUserInfo);
+    }
+
+
 }

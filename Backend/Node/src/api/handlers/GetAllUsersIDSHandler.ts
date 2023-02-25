@@ -1,18 +1,17 @@
-import UserModel from "../models/UserModel";
 import {Request, Response} from "express";
+import APIDatabase from "../APIDatabase";
+import {APIResponse} from "../APIResponse";
+import {CheckDBConnectionAndSendError} from "./ResponseUtils";
 
 async function GetAllUsersIDSHandler(req: Request, resp: Response)
 {
-    let users = await UserModel.find({}, "_id");
+    if (!CheckDBConnectionAndSendError(resp)) return;
 
-    users = users.map((user: any) =>
-    {
-        return user._id.toString();
-    });
+    const apiResp: APIResponse = new APIResponse();
 
-    resp.setHeader("Content-Type", "application/json");
-    resp.send(JSON.stringify(users));
-    resp.end();
+    apiResp.response = JSON.stringify(APIDatabase.GetAllUsersIDs());
+
+    apiResp.SendTo(resp);
 }
 
 export default GetAllUsersIDSHandler;

@@ -1,69 +1,72 @@
 import {APIError, APIErrorType, APIResponse} from "../APIResponse";
-import UserModel from "../models/UserModel";
 import {UserGender} from "../models/UserModel";
 import {Request, Response} from "express";
-import {SendInputInvalidError, SendInputNotProvidedError} from "./ResponseUtils";
+import {CheckDBConnectionAndSendError, SendInputNotValidError, SendInputNotProvidedError} from "./ResponseUtils";
+import APIDatabase from "../APIDatabase";
 
 
 async function PostSingleUserHandler(req: Request, resp: Response)
 {
+    if (!CheckDBConnectionAndSendError(resp)) return;
+
     let apiResponse: APIResponse = new APIResponse();
 
-    let userName: string = req.body.name;
-    let userEmail: string = req.body.email;
-    let userPhone: string = req.body.phone;
-    let userGender: UserGender = req.body.gender;
+    let userNameInput: string = req.body.name;
+    let userEmailInput: string = req.body.email;
+    let userPhoneInput: string = req.body.phone;
+    let userGenderInput: UserGender = req.body.gender;
 
 
-    if (userName == null)
+    if (userNameInput == null)
     {
         SendInputNotProvidedError(resp, "name");
         return;
     }
 
-    if (userEmail == null)
+    if (userEmailInput == null)
     {
         SendInputNotProvidedError(resp, "email");
         return;
     }
 
-    if (userPhone == null)
+    if (userPhoneInput == null)
     {
         SendInputNotProvidedError(resp, "phone");
         return;
     }
 
-    if (userGender == null)
+    if (userGenderInput == null)
     {
         SendInputNotProvidedError(resp, "gender");
         return;
     }
 
-    let validatedGender = UserGender[userGender];
+    let validatedGender = UserGender[userGenderInput];
 
     if (!validatedGender)
     {
-        SendInputInvalidError(resp, "gender");
+        SendInputNotValidError(resp, "gender");
         return;
     }
 
+    let postedUser = new User(
+        userNameInput,
+        userEmailInput,
+        userPhoneInput,
+        userGenderInput,
+        null
+    );
 
-    let user = new UserModel(
-        {
-            name: userName,
-            email: userEmail,
-            phone: userPhone,
-            gender: userGender
-        });
 
-    user.save().then(() =>
-    {
-        apiResponse.response = "Success";
-        apiResponse.SendTo(resp);
-    }).catch((e: Error) =>
-    {
-        apiResponse.error = new APIError(APIErrorType.DATABASE_ERROR, `User saving error: ${e.message}`);
-        apiResponse.SendTo(resp);
+    let addUserResult = APIDatabase.AddUser(postedUser);
+
+
+    if (addUserResult === null)
+        apiResponse.error = new APIError(APIErrorType.DATABASE_ERROR, "User saving error");
+    else
+        apiResponse.response = JSON.stringify({
+        status: "ok",
+        userId: addUserResult
     });
 
 }

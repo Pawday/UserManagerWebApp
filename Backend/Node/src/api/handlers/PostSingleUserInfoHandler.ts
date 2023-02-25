@@ -1,77 +1,132 @@
 import {Request, Response} from "express";
 import {APIError, APIErrorType, APIResponse} from "../APIResponse";
-import {SendInputInvalidError, SendInputNotProvidedError} from "./ResponseUtils";
-import UserAdditionalInfoModel from "../models/UserAdditionalInfoModel";
-import UserModel from "../models/UserModel";
+import {CheckDBConnectionAndSendError, SendInputNotProvidedError, SendInputNotValidError} from "./ResponseUtils";
+import APIDatabase from "../APIDatabase";
+import TypeTools from "../TypeTools";
 
 async function PostSingleUserInfoHandler(req: Request, resp: Response)
 {
-    let apiResponse: APIResponse = new APIResponse();
-    let userId: string = req.body.user_id;
-    let info: string = req.body.info;
+    if (!CheckDBConnectionAndSendError(resp)) return;
 
-    if (userId == null)
+    let apiResponse: APIResponse = new APIResponse();
+
+    let userIdInput: string = req.body.user_id;
+    let userInfoInput: any = req.body.user_info;
+
+    if (userIdInput == null)
     {
         SendInputNotProvidedError(resp, "user_id");
         return;
     }
 
-    if (info == null)
+    const userIdDB = APIDatabase.ConvertToDBEntityIDFrom(userIdInput);
+
+    if (userIdDB === null)
     {
-        SendInputNotProvidedError(resp, "info");
+        SendInputNotValidError(resp, "user_id");
         return;
     }
 
-    let userModel = await UserModel.findById(userId).catch(e =>
-    {
-        SendInputInvalidError(resp, "user_id");
-        return;
-    });
+    let userFromDB = APIDatabase.GetUserById(userIdDB);
 
-    if (userModel == null)
+    if (userFromDB == null)
     {
-        apiResponse.error = new APIError(APIErrorType.INVALID_INPUT, "user not found");
+        apiResponse.error = new APIError(APIErrorType.INVALID_INPUT, "user with provided user_id not existing in database");
         apiResponse.SendTo(resp);
         return;
     }
 
-    if (userModel.additionalInfo != null)
+
+
+
+    if (userFromDB.additionalInfo !== null)
     {
-        SendInputInvalidError(resp, "Provided user already have additional info");
-        return;
+        apiResponse.error = new APIError(APIErrorType.INVALID_INPUT, "This user already have info, use EditUserInfo");
+        apiResponse.SendTo(resp);
     }
 
+    {
 
-    let userInfoModel = await UserAdditionalInfoModel
-        .create(info)
-        .catch((e) =>
+        if (userInfoInput == null)
         {
-            SendInputInvalidError(resp, "info")
+            SendInputNotProvidedError(resp, "user_info");
             return;
+        }
+
+        const userAboutString: string = userInfoInput.about;
+
+        if (userAboutString === null)
+        {
+            SendInputNotProvidedError(resp, "user_info.about");
+            return;
+        }
+
+        const userSelectedOptionsArrayInput = userInfoInput.options_ids;
+
+        if (userSelectedOptionsArrayInput === null)
+        {
+            SendInputNotProvidedError(resp, "user_info.options_ids");
+            return;
+        }
+
+        if (!TypeTools.IsArray(userSelectedOptionsArrayInput))
+        {
+            SendInputNotValidError(resp, "user_info.options_ids");
+            return;
+        }
+
+        let validatedOptionsDBIds = (userSelectedOptionsArrayInput as Array<string>).map(optionIDInput =>
+        {
+            return APIDatabase.ConvertToDBEntityIDFrom(optionIDInput);
         });
 
-    if (resp.headersSent) return;
+        let invalidOptionInputIdIndex = validatedOptionsDBIds.findIndex(value => (value == null));
 
-    if (userInfoModel == null)
-    {
-        let message = "Validating info done, but something wrong according to return type";
-        message += "\n Void as type for variable is weird";
-        apiResponse.error = new APIError(APIErrorType.UNKNOWN_ERROR, message);
+        if (invalidOptionInputIdIndex !== -1)
+        {
+            SendInputNotValidError(resp,
+                `user_info.options_ids[${invalidOptionInputIdIndex}]
+                 ("${validatedOptionsDBIds[invalidOptionInputIdIndex]})`);
+            return;
+        }
+
+        let optionsFromDB = APIDatabase.GetOptionsByIDs(validatedOptionsDBIds as Array<DBEntityID>);
+
+        if (optionsFromDB == null)
+        {
+            apiResponse.error = new APIError(APIErrorType.INVALID_INPUT, "One of the user_info.options_ids was not in database");
+            apiResponse.SendTo(resp);
+            return;
+        }
+
+
+        let userAdditionalInfoToUpload = new UserAdditionalInfo(
+            userAboutString,
+            [...optionsFromDB]
+        );
+
+        let infoID = APIDatabase.AddUserAdditionalInfo(userAdditionalInfoToUpload);
+
+        if (infoID == null)
+        {
+            apiResponse.error = new APIError(APIErrorType.DATABASE_ERROR, "cannot upload new user info to database");
+            apiResponse.SendTo(resp);
+            return;
+        }
+
+        let updateUsersInfoStatus = APIDatabase.BindUserInfoToUser(userIdDB, infoID);
+
+        if (updateUsersInfoStatus)
+            apiResponse.response = "Success";
+        else
+            apiResponse.error = new APIError(APIErrorType.DATABASE_ERROR, "Binding user info to user error");
+
         apiResponse.SendTo(resp);
+
         return;
     }
 
-    userModel.additionalInfo = userInfoModel.id;
 
-    userInfoModel.save().then(() =>
-    {
-        apiResponse.response = "Success";
-        apiResponse.SendTo(resp);
-    }).catch((e) =>
-    {
-        apiResponse.error = new APIError(APIErrorType.DATABASE_ERROR, `info saving error ${e.message}`);
-        apiResponse.SendTo(resp);
-    });
 }
 
 

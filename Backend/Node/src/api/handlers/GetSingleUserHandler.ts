@@ -1,30 +1,25 @@
-import UserModel from "../models/UserModel";
 import {Request, Response} from "express";
 import {APIError, APIErrorType, APIResponse} from "../APIResponse";
-import {Error} from "mongoose";
+import APIDatabase from "../APIDatabase";
+import {CheckDBConnectionAndSendError} from "./ResponseUtils";
 
 async function GetSingleUserHandler(req: Request, resp: Response)
 {
+    if (!CheckDBConnectionAndSendError(resp)) return;
+
     let apiResp: APIResponse = new APIResponse();
-    let id = req.params.user_id;
+    let userIDInput = req.params.user_id;
 
+    const userId = APIDatabase.ConvertToDBEntityIDFrom(userIDInput);
 
-    // noinspection UnnecessaryLocalVariableJS -> it will be necessary when APIResponse.response field will not be "any"
-    let searchedUser = await UserModel.findById(id).catch((e: Error) =>
+    if (userId == null)
     {
-        if (e.name === "CastError")
-        {
-            apiResp.error = new APIError(APIErrorType.INVALID_INPUT, "Specified invalid \"user_id\"")
-            apiResp.SendTo(resp);
-            return;
-        }
-
-        apiResp.error = new APIError(APIErrorType.DATABASE_ERROR, "User searching error");
+        apiResp.error = new APIError(APIErrorType.INVALID_INPUT, "Specified invalid \"user_id\"")
         apiResp.SendTo(resp);
-    });
+        return;
+    }
 
-    apiResp.response = searchedUser; // if not found it will be "null"
-
+    apiResp.response = APIDatabase.GetUserById(userId); // if not found it will be "null"
     apiResp.SendTo(resp);
 }
 
