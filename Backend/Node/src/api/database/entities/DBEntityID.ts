@@ -1,1 +1,1 @@
-interface DBEntityID {}
+export interface DBEntityID {}

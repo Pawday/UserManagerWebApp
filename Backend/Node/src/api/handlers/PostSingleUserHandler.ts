@@ -3,6 +3,7 @@ import {UserGender} from "../models/UserModel";
 import {Request, Response} from "express";
 import {CheckDBConnectionAndSendError, SendInputNotValidError, SendInputNotProvidedError} from "./ResponseUtils";
 import APIDatabase from "../APIDatabase";
+import {User} from "../database/entities/User";
 
 
 async function PostSingleUserHandler(req: Request, resp: Response)
@@ -64,11 +65,11 @@ async function PostSingleUserHandler(req: Request, resp: Response)
     if (addUserResult === null)
         apiResponse.error = new APIError(APIErrorType.DATABASE_ERROR, "User saving error");
     else
-        apiResponse.response = JSON.stringify({
+        apiResponse.response = {
         status: "ok",
-        userId: addUserResult
-    });
+        userId: addUserResult}
 
+    apiResponse.SendTo(resp);
 }
 
 

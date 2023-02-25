@@ -1,10 +1,12 @@
-enum UserGender
+import {UserAdditionalInfo} from "./UserAdditionalInfo";
+
+export enum UserGender
 {
     WOMAN,
     MAN
 }
 
-class User
+export class User
 {
     private readonly _name: string;
     private readonly _email: string;

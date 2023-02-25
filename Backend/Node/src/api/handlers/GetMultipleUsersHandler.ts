@@ -4,6 +4,7 @@ import TypeTools from "../TypeTools";
 import {APIError, APIErrorType, APIResponse} from "../APIResponse";
 import APIDatabase from "../APIDatabase";
 import {CheckDBConnectionAndSendError} from "./ResponseUtils";
+import {DBEntityID} from "../database/entities/DBEntityID";
 
 
 async function GetMultipleUsersHandler(req: Request, resp: Response)
@@ -22,6 +23,7 @@ async function GetMultipleUsersHandler(req: Request, resp: Response)
 
     let validatedUserIdList = new Array<DBEntityID>();
 
+    // TODO: typescripts array assertions not right
     for (let i = 0; i < usersIdsArrayInput.length; i++)
     {
         let dbIdOrNull = APIDatabase.ConvertToDBEntityIDFrom<string>(usersIdsArrayInput[i]);
@@ -38,7 +40,7 @@ async function GetMultipleUsersHandler(req: Request, resp: Response)
 
     let users = APIDatabase.GetUsersByIds(validatedUserIdList);
 
-    apiResp.response = JSON.stringify(users);
+    apiResp.response = users;
     apiResp.SendTo(resp);
 }
 

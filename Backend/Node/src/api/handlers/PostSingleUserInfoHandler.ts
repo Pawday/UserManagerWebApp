@@ -3,6 +3,8 @@ import {APIError, APIErrorType, APIResponse} from "../APIResponse";
 import {CheckDBConnectionAndSendError, SendInputNotProvidedError, SendInputNotValidError} from "./ResponseUtils";
 import APIDatabase from "../APIDatabase";
 import TypeTools from "../TypeTools";
+import {DBEntityID} from "../database/entities/DBEntityID";
+import {UserAdditionalInfo} from "../database/entities/UserAdditionalInfo";
 
 async function PostSingleUserInfoHandler(req: Request, resp: Response)
 {

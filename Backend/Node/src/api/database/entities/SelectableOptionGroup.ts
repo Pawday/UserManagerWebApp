@@ -1,6 +1,7 @@
+import {SelectableOption} from "./SelectableOption";
 
 
-class SelectableOptionGroup
+export class SelectableOptionGroup
 {
     private readonly _name: string;
     private readonly _options: SelectableOption[];

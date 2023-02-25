@@ -14,7 +14,7 @@ app.use("*", NotApiCallHandler);
 
 async function main()
 {
-    await MongooseInit();
+    //await MongooseInit();
 
     app.listen(3000, () =>
     {

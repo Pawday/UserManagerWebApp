@@ -1,3 +1,9 @@
+import {DBEntityID} from "../entities/DBEntityID";
+import {User} from "../entities/User";
+import {UserAdditionalInfo} from "../entities/UserAdditionalInfo";
+import {SelectableOption} from "../entities/SelectableOption";
+import {SelectableOptionGroup} from "../entities/SelectableOptionGroup";
+
 class InMemoryDBEntityId implements DBEntityID
 {
     id: number;
@@ -8,7 +14,7 @@ class InMemoryDBEntityId implements DBEntityID
     }
 }
 
-class InMemoryDatabase implements IDatabase
+export class InMemoryDatabase implements IDatabase
 {
     private readonly _users: User[];
     private readonly _usersAdditionalInfos: UserAdditionalInfo[];

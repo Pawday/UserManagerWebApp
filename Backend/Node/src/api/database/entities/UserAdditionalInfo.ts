@@ -1,4 +1,6 @@
-class UserAdditionalInfo
+import {SelectableOption} from "./SelectableOption";
+
+export class UserAdditionalInfo
 {
     private readonly _aboutString: string;
     private readonly _options: SelectableOption[];

@@ -1,4 +1,4 @@
-class SelectableOption
+export class SelectableOption
 {
     private readonly _name: string;
 
