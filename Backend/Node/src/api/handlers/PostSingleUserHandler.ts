@@ -54,8 +54,7 @@ async function PostSingleUserHandler(req: Request, resp: Response)
         userNameInput,
         userEmailInput,
         userPhoneInput,
-        userGenderInput,
-        null
+        userGenderInput
     );
 
 

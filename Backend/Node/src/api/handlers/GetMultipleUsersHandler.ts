@@ -5,6 +5,7 @@ import {APIError, APIErrorType, APIResponse} from "../APIResponse";
 import APIDatabase from "../APIDatabase";
 import {CheckDBConnectionAndSendError} from "./ResponseUtils";
 import {DBEntityID} from "../database/entities/DBEntityID";
+import {User} from "../database/entities/User";
 
 
 async function GetMultipleUsersHandler(req: Request, resp: Response)
@@ -40,7 +41,10 @@ async function GetMultipleUsersHandler(req: Request, resp: Response)
 
     let users = APIDatabase.GetUsersByIds(validatedUserIdList);
 
-    apiResp.response = users;
+    apiResp.response = users?.map((value: User | null) =>
+    {
+        return value?.asPublicObject || null
+    });
     apiResp.SendTo(resp);
 }
 

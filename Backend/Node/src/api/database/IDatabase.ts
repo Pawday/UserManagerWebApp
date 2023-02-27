@@ -1,3 +1,8 @@
+import {DBEntityID} from "./entities/DBEntityID";
+import {User} from "./entities/User";
+import {UserAdditionalInfo} from "./entities/UserAdditionalInfo";
+import {SelectableOption} from "./entities/SelectableOption";
+import {SelectableOptionGroup} from "./entities/SelectableOptionGroup";
 
 
 interface IDatabase
@@ -18,23 +23,26 @@ interface IDatabase
 
 
     AddUserAdditionalInfo(info: UserAdditionalInfo): DBEntityID | null;
-    GetUserAdditionalInfo(userID: DBEntityID) : UserAdditionalInfo | null;
+    GetUserAdditionalInfoId(userID: DBEntityID) : DBEntityID | null;
     EditUserAdditionalInfo(infoID: DBEntityID, newInfo: UserAdditionalInfo) : boolean;
 
     BindUserInfoToUser(userId: DBEntityID, userInfoID: DBEntityID) : boolean;
 
 
     AddOption(option: SelectableOption): DBEntityID | null;
-    GetAllOptionsIDs(): DBEntityID[];
+    GetAllOptionsIDs(): DBEntityID[] | null;
     GetOptionById(optionId: DBEntityID): SelectableOption | null;
+
+    // Returns null if at least one id not found
     GetOptionsByIDs(optionIDs: DBEntityID[]): SelectableOption[] | null;
 
 
     AddOptionsGroup(group: SelectableOptionGroup): DBEntityID | null;
-    GetAllOptionGroupsIDs(): DBEntityID[];
+    GetAllOptionGroupsIDs(): DBEntityID[] | null;
 
     BindOptionToOptionGroup(optionID: DBEntityID, optionGroupID: DBEntityID): boolean;
 
     BindOptionToUser(optionID: DBEntityID, userId: DBEntityID): boolean;
 }
 
+export default IDatabase;

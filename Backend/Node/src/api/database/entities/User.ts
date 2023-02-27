@@ -1,5 +1,3 @@
-import {UserAdditionalInfo} from "./UserAdditionalInfo";
-
 export enum UserGender
 {
     WOMAN,
@@ -12,7 +10,6 @@ export class User
     private readonly _email: string;
     private readonly _phone: string;
     private readonly _gender: UserGender;
-    private readonly _additionalInfo: UserAdditionalInfo | null;
 
 
     constructor(
@@ -20,15 +17,34 @@ export class User
         email: string,
         phone: string,
         gender: UserGender,
-        additionalInfo: UserAdditionalInfo | null
     )
     {
         this._name = name;
         this._email = email;
         this._phone = phone;
         this._gender = gender;
-        this._additionalInfo = additionalInfo;
     }
+
+    get asPublicObject(): object
+    {
+        return {
+            name: this._name,
+            email: this._email,
+            phone: this._phone,
+            gender: this._gender
+        }
+    }
+
+    static AreEqual(left: User, rigth: User)
+    {
+        if (left._name !== rigth._name) return false;
+        if (left._email !== rigth._email) return false;
+        if (left._phone !== rigth._phone) return false;
+        if (left._gender !== rigth._gender) return false;
+
+        return true;
+    }
+
 
 
     get name(): string
@@ -49,10 +65,5 @@ export class User
     get gender(): UserGender
     {
         return this._gender;
-    }
-
-    get additionalInfo(): UserAdditionalInfo | null
-    {
-        return this._additionalInfo;
     }
 }

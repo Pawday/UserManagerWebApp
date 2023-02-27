@@ -1,37 +1,98 @@
 import {Request, Response} from "express";
-import OptionModel from "../models/OptionModel";
-import OptionGroupModel from "../models/OptionGroupModel";
+import {CheckDBConnectionAndSendError} from "./ResponseUtils";
+import APIDatabase from "../APIDatabase";
+import {SelectableOptionGroup} from "../database/entities/SelectableOptionGroup";
+import {SelectableOption} from "../database/entities/SelectableOption";
+import {DBEntityID} from "../database/entities/DBEntityID";
+
+
+function SendError(resp: Response, message: string)
+{
+    resp.statusCode = 500;
+    resp.send(message);
+    return;
+}
 
 
 async function DatabaseInitialiseHandler(req: Request, resp: Response)
 {
-    (await OptionGroupModel.deleteMany({}));
-    (await OptionModel.deleteMany({}));
+    CheckDBConnectionAndSendError(resp);
 
-    let movieGenresGroup = (await OptionGroupModel.create({optionGroupName: "Жанры фильмов"}));
+    let movieGenresGroupDBID: DBEntityID | null = APIDatabase.AddOptionsGroup(new SelectableOptionGroup("Жанры фильмов"));
 
-    movieGenresGroup.options.push((await OptionModel.create({name: "Боевик"})).id);
-    movieGenresGroup.options.push((await OptionModel.create({name: "Вестерн"})).id);
-    movieGenresGroup.options.push((await OptionModel.create({name: "Детектив"})).id);
-    movieGenresGroup.options.push((await OptionModel.create({name: "Драма"})).id);
-    movieGenresGroup.options.push((await OptionModel.create({name: "Комедия"})).id);
-    movieGenresGroup.options.push((await OptionModel.create({name: "Мелодрама"})).id);
-    movieGenresGroup.options.push((await OptionModel.create({name: "Мультфильм"})).id);
+    if (movieGenresGroupDBID == null)
+    {
+        SendError(resp, "Fail to create option group \"Жанры фильмов\"")
+        return;
+    }
 
-    await movieGenresGroup.save();
+    const movieOptionsAsStrings: string[] = [
+        "Боевик",
+        "Вестерн",
+        "Детектив",
+        "Драма",
+        "Комедия",
+        "Мелодрама",
+        "Мультфильм"];
 
-    let hobbyGroup = (await OptionGroupModel.create({optionGroupName: "Хобби"}));
+    for (let optionToAddIndex = 0; optionToAddIndex < movieOptionsAsStrings.length; optionToAddIndex++)
+    {
+        const value = movieOptionsAsStrings[optionToAddIndex];
+        let optionId = APIDatabase.AddOption(new SelectableOption(value));
+        if (optionId == null)
+        {
+            resp.send(`Inserting ${value} to option list failed`);
+            resp.end();
+            return;
+        }
+        let optionBindStatus = APIDatabase.BindOptionToOptionGroup(optionId, movieGenresGroupDBID);
+        if (!optionBindStatus)
+        {
+            resp.send(`Binding option ${value} to its option group failed`);
+            resp.end();
+            return;
+        }
+    }
 
-    hobbyGroup.options.push((await OptionModel.create({name: "Танцы"})).id);
-    hobbyGroup.options.push((await OptionModel.create({name: "Музыка"})).id);
-    hobbyGroup.options.push((await OptionModel.create({name: "Стендап"})).id);
-    hobbyGroup.options.push((await OptionModel.create({name: "Рукоделие"})).id);
-    hobbyGroup.options.push((await OptionModel.create({name: "Фотография"})).id);
-    hobbyGroup.options.push((await OptionModel.create({name: "Рисование"})).id);
-    hobbyGroup.options.push((await OptionModel.create({name: "Лепка"})).id);
-    hobbyGroup.options.push((await OptionModel.create({name: "Оригами"})).id);
+    let hobbyGroupDBID = APIDatabase.AddOptionsGroup(new SelectableOptionGroup("Хобби"));
 
-    await hobbyGroup.save();
+
+    if (hobbyGroupDBID == null)
+    {
+        SendError(resp, "Fail to create option group \"Хобби\"")
+        return;
+    }
+
+
+    const hobbyOptionAsStrings : string[] = [
+        "Танцы",
+        "Музыка",
+        "Стендап",
+        "Рукоделие",
+        "Фотография",
+        "Рисование",
+        "Лепка",
+        "Оригами",
+    ];
+
+    for (let optionToAddIndex = 0; optionToAddIndex < hobbyOptionAsStrings.length; optionToAddIndex++)
+    {
+        const value = hobbyOptionAsStrings[optionToAddIndex];
+        let optionId = APIDatabase.AddOption(new SelectableOption(value));
+        if (optionId == null)
+        {
+            resp.send(`Inserting ${value} to option list failed`);
+            resp.end();
+            return;
+        }
+        let optionBindStatus = APIDatabase.BindOptionToOptionGroup(optionId, hobbyGroupDBID);
+        if (!optionBindStatus)
+        {
+            resp.send(`Binding option ${value} to its option group failed`);
+            resp.end();
+            return;
+        }
+    }
 
     resp.send("Success");
     resp.end();

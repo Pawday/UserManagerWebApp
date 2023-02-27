@@ -39,9 +39,7 @@ async function PostSingleUserInfoHandler(req: Request, resp: Response)
     }
 
 
-
-
-    if (userFromDB.additionalInfo !== null)
+    if (APIDatabase.GetUserAdditionalInfoId(userIdDB) !== null)
     {
         apiResponse.error = new APIError(APIErrorType.INVALID_INPUT, "This user already have info, use EditUserInfo");
         apiResponse.SendTo(resp);

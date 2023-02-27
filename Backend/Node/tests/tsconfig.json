@@ -1,0 +1,21 @@
+{
+
+  "compilerOptions": {
+    "target":  "ESNext",
+    "outDir": "./build",
+    "baseUrl": "./",
+    "rootDirs": ["."],
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "experimentalDecorators": true,
+    "strictPropertyInitialization": false,
+    "strict": true,
+    "typeRoots" : [
+      "../node_modules/@types"
+    ],
+    "skipLibCheck": true
+  },
+  "exclude": [
+    "../node_modules"
+  ]
+}
