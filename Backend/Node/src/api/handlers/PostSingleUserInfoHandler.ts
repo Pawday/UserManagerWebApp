@@ -39,93 +39,101 @@ async function PostSingleUserInfoHandler(req: Request, resp: Response)
     }
 
 
-    if (APIDatabase.GetUserAdditionalInfoId(userIdDB) !== null)
+    if (APIDatabase.GetUserAdditionalInfoById(userIdDB) !== null)
     {
         apiResponse.error = new APIError(APIErrorType.INVALID_INPUT, "This user already have info, use EditUserInfo");
         apiResponse.SendTo(resp);
     }
 
+
+    if (userInfoInput == null)
     {
-
-        if (userInfoInput == null)
-        {
-            SendInputNotProvidedError(resp, "user_info");
-            return;
-        }
-
-        const userAboutString: string = userInfoInput.about;
-
-        if (userAboutString === null)
-        {
-            SendInputNotProvidedError(resp, "user_info.about");
-            return;
-        }
-
-        const userSelectedOptionsArrayInput = userInfoInput.options_ids;
-
-        if (userSelectedOptionsArrayInput === null)
-        {
-            SendInputNotProvidedError(resp, "user_info.options_ids");
-            return;
-        }
-
-        if (!TypeTools.IsArray(userSelectedOptionsArrayInput))
-        {
-            SendInputNotValidError(resp, "user_info.options_ids");
-            return;
-        }
-
-        let validatedOptionsDBIds = (userSelectedOptionsArrayInput as Array<string>).map(optionIDInput =>
-        {
-            return APIDatabase.ConvertToDBEntityIDFrom(optionIDInput);
-        });
-
-        let invalidOptionInputIdIndex = validatedOptionsDBIds.findIndex(value => (value == null));
-
-        if (invalidOptionInputIdIndex !== -1)
-        {
-            SendInputNotValidError(resp,
-                `user_info.options_ids[${invalidOptionInputIdIndex}]
-                 ("${validatedOptionsDBIds[invalidOptionInputIdIndex]})`);
-            return;
-        }
-
-        let optionsFromDB = APIDatabase.GetOptionsByIDs(validatedOptionsDBIds as Array<DBEntityID>);
-
-        if (optionsFromDB == null)
-        {
-            apiResponse.error = new APIError(APIErrorType.INVALID_INPUT, "One of the user_info.options_ids was not in database");
-            apiResponse.SendTo(resp);
-            return;
-        }
-
-
-        let userAdditionalInfoToUpload = new UserAdditionalInfo(
-            userAboutString,
-            [...optionsFromDB]
-        );
-
-        let infoID = APIDatabase.AddUserAdditionalInfo(userAdditionalInfoToUpload);
-
-        if (infoID == null)
-        {
-            apiResponse.error = new APIError(APIErrorType.DATABASE_ERROR, "cannot upload new user info to database");
-            apiResponse.SendTo(resp);
-            return;
-        }
-
-        let updateUsersInfoStatus = APIDatabase.BindUserInfoToUser(userIdDB, infoID);
-
-        if (updateUsersInfoStatus)
-            apiResponse.response = "Success";
-        else
-            apiResponse.error = new APIError(APIErrorType.DATABASE_ERROR, "Binding user info to user error");
-
-        apiResponse.SendTo(resp);
-
+        SendInputNotProvidedError(resp, "user_info");
         return;
     }
 
+    const userAboutString: string = userInfoInput.about;
+
+    if (userAboutString === null)
+    {
+        SendInputNotProvidedError(resp, "user_info.about");
+        return;
+    }
+
+    const userSelectedOptionsArrayInput = userInfoInput.options_ids;
+
+    if (userSelectedOptionsArrayInput === null)
+    {
+        SendInputNotProvidedError(resp, "user_info.options_ids");
+        return;
+    }
+
+    if (!TypeTools.IsArray(userSelectedOptionsArrayInput))
+    {
+        SendInputNotValidError(resp, "user_info.options_ids");
+        return;
+    }
+
+    let userSelectedOptionsAsStringArray = userSelectedOptionsArrayInput as Array<string>;
+
+    let validatedOptionsDBIds = Array<DBEntityID>(userSelectedOptionsAsStringArray.length);
+
+    for (let index = 0; index < userSelectedOptionsAsStringArray.length; index++)
+    {
+        let optionValidIDOrNull = APIDatabase.ConvertToDBEntityIDFrom(userSelectedOptionsAsStringArray[index]);
+
+        if (optionValidIDOrNull == null)
+        {
+            SendInputNotValidError(resp, `user_info.options_ids[${index}] ("${userSelectedOptionsAsStringArray[index]})`);
+            return;
+        }
+        validatedOptionsDBIds[index] = optionValidIDOrNull;
+    }
+
+
+    for (let index = 0; index < validatedOptionsDBIds.length; index++)
+    {
+        let isOptionExist = APIDatabase.IsOptionExistById(validatedOptionsDBIds[index]);
+
+        if (!isOptionExist)
+        {
+            apiResponse.error = new APIError(APIErrorType.INVALID_INPUT, `user_info.options_ids[${index}] is not in database`);
+            apiResponse.SendTo(resp);
+            return;
+        }
+
+        let bindStatus = APIDatabase.BindOptionToUser(validatedOptionsDBIds[index], userIdDB);
+
+        if (!bindStatus)
+        {
+            apiResponse.error = new APIError(APIErrorType.DATABASE_ERROR, `cannot bind user_info.options_ids[${index}] to user`);
+            apiResponse.SendTo(resp);
+            return;
+        }
+    }
+
+
+    let userAdditionalInfoToUpload = new UserAdditionalInfo(userAboutString);
+
+    let infoID = APIDatabase.AddUserAdditionalInfo(userAdditionalInfoToUpload);
+
+    if (infoID == null)
+    {
+        apiResponse.error = new APIError(APIErrorType.DATABASE_ERROR, "cannot upload new user info to database");
+        apiResponse.SendTo(resp);
+        return;
+    }
+
+    let updateUsersInfoStatus = APIDatabase.BindUserInfoToUser(userIdDB, infoID);
+
+    if (updateUsersInfoStatus)
+        apiResponse.response = "Success";
+    else
+        apiResponse.error = new APIError(APIErrorType.DATABASE_ERROR, "Binding user info to user error");
+
+    apiResponse.SendTo(resp);
+
+    return;
 
 }
 

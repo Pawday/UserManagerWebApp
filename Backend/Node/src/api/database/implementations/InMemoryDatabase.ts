@@ -85,7 +85,7 @@ export class InMemoryDatabase implements IDatabase
         return foundUsers;
     }
 
-    EditUser(userID: InMemoryDBEntityId, newValue: User): boolean
+    UpdateUser(userID: InMemoryDBEntityId, newValue: User): boolean
     {
         if (this._users.length <= userID.id) return false;
 
@@ -111,7 +111,7 @@ export class InMemoryDatabase implements IDatabase
         return new InMemoryDBEntityId(index - 1);
     }
 
-    GetUserAdditionalInfoId(userID: InMemoryDBEntityId): DBEntityID | null
+    GetUserAdditionalInfoById(userID: InMemoryDBEntityId): DBEntityID | null
     {
         if (this._users.length <= userID.id) return null;
 
@@ -125,14 +125,11 @@ export class InMemoryDatabase implements IDatabase
         return userUserInfoPair[1];
     }
 
-    EditUserAdditionalInfo(infoID: InMemoryDBEntityId, newInfoValue: UserAdditionalInfo): boolean
+    UpdateUserAdditionalInfo(infoID: InMemoryDBEntityId, newInfoValue: UserAdditionalInfo): boolean
     {
         if (this._usersAdditionalInfos.length <= infoID.id) return false;
 
-        this._usersAdditionalInfos[infoID.id] = new UserAdditionalInfo(
-            newInfoValue.aboutString,
-            newInfoValue.options
-        );
+        this._usersAdditionalInfos[infoID.id] = new UserAdditionalInfo(newInfoValue.aboutString);
 
         return true;
     }
@@ -173,6 +170,12 @@ export class InMemoryDatabase implements IDatabase
         if (this._options.length <= optionId.id) return null;
         return this._options[optionId.id];
     }
+
+    IsOptionExistById(optionId: InMemoryDBEntityId): boolean
+    {
+        return this._options.length <= optionId.id;
+    }
+
 
     GetOptionsByIDs(optionIDs: InMemoryDBEntityId[]): SelectableOption[] | null
     {

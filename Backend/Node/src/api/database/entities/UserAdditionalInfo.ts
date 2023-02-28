@@ -1,24 +1,21 @@
-import {SelectableOption} from "./SelectableOption";
-
 export class UserAdditionalInfo
 {
     private readonly _aboutString: string;
-    private readonly _options: SelectableOption[];
 
-    constructor(aboutString: string, options: SelectableOption[])
+    constructor(aboutString: string)
     {
         this._aboutString = aboutString;
-        this._options = options;
     }
 
+    static AreEqual(left: UserAdditionalInfo, right: UserAdditionalInfo): boolean
+    {
+        if (left._aboutString !== right._aboutString) return false;
+
+        return true;
+    }
 
     get aboutString(): string
     {
         return this._aboutString;
-    }
-
-    get options(): SelectableOption[]
-    {
-        return this._options;
     }
 }

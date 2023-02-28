@@ -17,14 +17,14 @@ interface IDatabase
     // Returns null if at least one id not found
     GetUsersByIds(usersIDs: DBEntityID[]): User[] | null;
 
-    EditUser(userID: DBEntityID, newValue: User): boolean;
+    UpdateUser(userID: DBEntityID, newValue: User): boolean;
     GetAllUsersIDs(): DBEntityID[];
 
 
 
     AddUserAdditionalInfo(info: UserAdditionalInfo): DBEntityID | null;
-    GetUserAdditionalInfoId(userID: DBEntityID) : DBEntityID | null;
-    EditUserAdditionalInfo(infoID: DBEntityID, newInfo: UserAdditionalInfo) : boolean;
+    GetUserAdditionalInfoById(userID: DBEntityID) : DBEntityID | null;
+    UpdateUserAdditionalInfo(infoID: DBEntityID, newInfo: UserAdditionalInfo) : boolean;
 
     BindUserInfoToUser(userId: DBEntityID, userInfoID: DBEntityID) : boolean;
 
@@ -32,6 +32,7 @@ interface IDatabase
     AddOption(option: SelectableOption): DBEntityID | null;
     GetAllOptionsIDs(): DBEntityID[] | null;
     GetOptionById(optionId: DBEntityID): SelectableOption | null;
+    IsOptionExistById(optionId: DBEntityID): boolean;
 
     // Returns null if at least one id not found
     GetOptionsByIDs(optionIDs: DBEntityID[]): SelectableOption[] | null;
