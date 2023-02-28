@@ -3,6 +3,7 @@ import IDatabase from "../../src/api/database/IDatabase";
 import {User, UserGender} from "../../src/api/database/entities/User";
 import {assert} from "chai";
 import {DBEntityID} from "../../src/api/database/entities/DBEntityID";
+import {UserAdditionalInfo} from "../../src/api/database/entities/UserAdditionalInfo";
 
 
 // see https://www.typescriptlang.org/docs/handbook/2/functions.html#call-signatures
@@ -14,24 +15,7 @@ export class GeneralDatabaseTester
 {
     protected databaseMaker: DatabaseMaker;
 
-    @test("PutAndGetUser")
-    PutAndGetUser()
-    {
-        const db = this.databaseMaker();
-
-        assert(db.CheckConnection(), "Database is not connected");
-        const user: User = new User("a", "Asd", "asd", UserGender.WOMAN);
-        let userId = db.AddUser(user);
-
-        assert(userId !== null);
-        let userFromDb = db.GetUserById(userId);
-
-        assert(userFromDb !== null);
-
-        assert(User.AreEqual(userFromDb, user));
-    }
-
-    private GenerateUsersAndSendThemToDBWithNullCheck(database: IDatabase,usersAmount: number): [User[], DBEntityID[]]
+    private static GenerateUsersAndSendThemToDBWithNullCheck(database: IDatabase,usersAmount: number): [User[], DBEntityID[]]
     {
         const users: User[] = new Array<User>(usersAmount);
 
@@ -60,15 +44,40 @@ export class GeneralDatabaseTester
         return [users, userIds];
     }
 
+    private static AssertDatabaseConnected(database: IDatabase) : boolean
+    {
+        let connectionStatus = database.CheckConnection();
+        assert(connectionStatus, "Database is not connected (IDatabase.CheckConnection returned false)");
+        return connectionStatus;
+    }
+
+    @test("PutAndGetUser")
+    PutAndGetUser()
+    {
+        const db = this.databaseMaker();
+
+        if (!GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
+
+        const user: User = new User("a", "Asd", "asd", UserGender.WOMAN);
+        let userId = db.AddUser(user);
+
+        assert(userId !== null);
+
+        let userFromDb = db.GetUserById(userId);
+
+        assert(userFromDb !== null);
+
+        assert(User.AreEqual(userFromDb, user));
+    }
+
     @test("PutAndGetUsers")
     PutAndGetUsers()
     {
         const db = this.databaseMaker();
 
+        if (!GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
 
-        assert(db.CheckConnection(), "Database is not connected");
-
-        let [users, userIds] = this.GenerateUsersAndSendThemToDBWithNullCheck(db, 100);
+        let [users, userIds] = GeneralDatabaseTester.GenerateUsersAndSendThemToDBWithNullCheck(db, 100);
 
         let usersFromDB = db.GetUsersByIds(userIds);
 
@@ -89,7 +98,7 @@ export class GeneralDatabaseTester
     {
         const db = this.databaseMaker();
 
-        assert(db.CheckConnection(), "Database is not connected");
+        if (!GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
 
         const user: User = new User(
             "Name",
@@ -115,7 +124,7 @@ export class GeneralDatabaseTester
             UserGender.MAN
         );
 
-        assert(db.EditUser(userId, newUser), "Database is not able to update user");
+        assert(db.UpdateUser(userId, newUser), "Database is not able to update user");
 
         const newUserFromDB = db.GetUserById(userId);
 
@@ -131,9 +140,9 @@ export class GeneralDatabaseTester
     {
         const db = this.databaseMaker();
 
-        assert(db.CheckConnection(), "Database is not connected");
+        if (!GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
 
-        let [users, usersIds] = this.GenerateUsersAndSendThemToDBWithNullCheck(db, 43);
+        let [users, usersIds] = GeneralDatabaseTester.GenerateUsersAndSendThemToDBWithNullCheck(db, 43);
 
         let allUsersIDs = db.GetAllUsersIDs();
 
@@ -154,5 +163,25 @@ export class GeneralDatabaseTester
                 }});
             assert(foundUser !== undefined);
         }
+    }
+
+    @test("AddAndGetUserAdditionalInfo")
+    AddAndGetUserAdditionalInfo()
+    {
+        const db = this.databaseMaker();
+
+        if (!GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
+
+        const info = new UserAdditionalInfo("Some about string")
+
+        let addUserAdditionalInfoID = db.AddUserAdditionalInfo(info);
+
+        assert(addUserAdditionalInfoID !== null);
+
+        let infoFromDB = db.GetUserAdditionalInfoById(addUserAdditionalInfoID);
+
+        assert(infoFromDB !== null);
+
+        assert(UserAdditionalInfo.AreEqual(infoFromDB, info));
     }
 }

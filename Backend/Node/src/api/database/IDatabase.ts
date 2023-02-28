@@ -23,7 +23,7 @@ interface IDatabase
 
 
     AddUserAdditionalInfo(info: UserAdditionalInfo): DBEntityID | null;
-    GetUserAdditionalInfoById(userID: DBEntityID) : DBEntityID | null;
+    GetUserAdditionalInfoById(infoID: DBEntityID) : UserAdditionalInfo | null;
     UpdateUserAdditionalInfo(infoID: DBEntityID, newInfo: UserAdditionalInfo) : boolean;
 
     BindUserInfoToUser(userId: DBEntityID, userInfoID: DBEntityID) : boolean;

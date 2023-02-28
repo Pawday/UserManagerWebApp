@@ -67,7 +67,7 @@ export class InMemoryDatabase implements IDatabase
     GetUserById(id: InMemoryDBEntityId): User | null
     {
         if (this._users.length <= id.id) return null;
-        return this._users[id.id];
+        return Object.assign({}, this._users[id.id]);
     }
 
     GetUsersByIds(usersIDs: InMemoryDBEntityId[]): User[] | null
@@ -111,18 +111,10 @@ export class InMemoryDatabase implements IDatabase
         return new InMemoryDBEntityId(index - 1);
     }
 
-    GetUserAdditionalInfoById(userID: InMemoryDBEntityId): DBEntityID | null
+    GetUserAdditionalInfoById(infoId: InMemoryDBEntityId): UserAdditionalInfo | null
     {
-        if (this._users.length <= userID.id) return null;
-
-        let userUserInfoPair = this._userToInfoMap.find((userIDInfoIDPair =>
-        {
-            return userIDInfoIDPair[0].id == userID.id;
-        }));
-
-        if (userUserInfoPair === undefined) return null;
-
-        return userUserInfoPair[1];
+        if (this._usersAdditionalInfos.length <= infoId.id) return null;
+        return Object.assign({}, this._usersAdditionalInfos[infoId.id]);
     }
 
     UpdateUserAdditionalInfo(infoID: InMemoryDBEntityId, newInfoValue: UserAdditionalInfo): boolean
@@ -168,12 +160,12 @@ export class InMemoryDatabase implements IDatabase
     GetOptionById(optionId: InMemoryDBEntityId): SelectableOption | null
     {
         if (this._options.length <= optionId.id) return null;
-        return this._options[optionId.id];
+        return Object.assign({}, this._options[optionId.id]);
     }
 
     IsOptionExistById(optionId: InMemoryDBEntityId): boolean
     {
-        return this._options.length <= optionId.id;
+        return Object.assign({}, this._options.length <= optionId.id);
     }
 
 
