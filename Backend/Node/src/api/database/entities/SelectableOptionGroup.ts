@@ -7,6 +7,13 @@ export class SelectableOptionGroup
         this._name = name;
     }
 
+    static AreEqual(left: SelectableOptionGroup, right: SelectableOptionGroup)
+    {
+        if (left._name !== right._name) return false;
+
+        return true;
+    }
+
     get name(): string
     {
         return this._name;

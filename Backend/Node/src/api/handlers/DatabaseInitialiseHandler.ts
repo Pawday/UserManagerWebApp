@@ -18,7 +18,7 @@ async function DatabaseInitialiseHandler(req: Request, resp: Response)
 {
     CheckDBConnectionAndSendError(resp);
 
-    let movieGenresGroupDBID: DBEntityID | null = APIDatabase.AddOptionsGroup(new SelectableOptionGroup("Жанры фильмов"));
+    let movieGenresGroupDBID: DBEntityID | null = APIDatabase.AddOptionGroup(new SelectableOptionGroup("Жанры фильмов"));
 
     if (movieGenresGroupDBID == null)
     {
@@ -54,7 +54,7 @@ async function DatabaseInitialiseHandler(req: Request, resp: Response)
         }
     }
 
-    let hobbyGroupDBID = APIDatabase.AddOptionsGroup(new SelectableOptionGroup("Хобби"));
+    let hobbyGroupDBID = APIDatabase.AddOptionGroup(new SelectableOptionGroup("Хобби"));
 
 
     if (hobbyGroupDBID == null)

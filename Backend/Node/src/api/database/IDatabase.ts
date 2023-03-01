@@ -25,7 +25,6 @@ interface IDatabase
 
     AddUserAdditionalInfo(info: UserAdditionalInfo): DBEntityID | null;
     GetUserAdditionalInfoById(infoID: DBEntityID) : UserAdditionalInfo | null;
-    UpdateUserAdditionalInfo(infoID: DBEntityID, newInfo: UserAdditionalInfo) : boolean;
 
     BindUserInfoToUser(userId: DBEntityID, userInfoID: DBEntityID) : boolean;
     GetUserInfoIdByUserId(userId: DBEntityID): DBEntityID | null;
@@ -40,12 +39,14 @@ interface IDatabase
     GetOptionsByIDs(optionIDs: DBEntityID[]): SelectableOption[] | null;
 
 
-    AddOptionsGroup(group: SelectableOptionGroup): DBEntityID | null;
+    AddOptionGroup(group: SelectableOptionGroup): DBEntityID | null;
+    GetOptionGroupByID(groupID: DBEntityID) : SelectableOptionGroup | null;
     GetAllOptionGroupsIDs(): DBEntityID[] | null;
 
     BindOptionToOptionGroup(optionID: DBEntityID, optionGroupID: DBEntityID): boolean;
-
+    GetOptionsIDsByGroupID(optionGroupID: DBEntityID): DBEntityID[] | null;
     BindOptionToUser(optionID: DBEntityID, userId: DBEntityID): boolean;
+    GetUserOptionsIDsByUserId(userID: DBEntityID): DBEntityID[] | null;
 }
 
 export default IDatabase;

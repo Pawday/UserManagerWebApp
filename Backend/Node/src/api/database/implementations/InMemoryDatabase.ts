@@ -5,7 +5,7 @@ import {SelectableOption} from "../entities/SelectableOption";
 import {SelectableOptionGroup} from "../entities/SelectableOptionGroup";
 import IDatabase from "../IDatabase";
 
-class InMemoryDBEntityId implements DBEntityID
+export class InMemoryDBEntityId implements DBEntityID
 {
     id: number;
 
@@ -129,16 +129,6 @@ export class InMemoryDatabase implements IDatabase
         return Object.assign({}, this._usersAdditionalInfos[infoId.id]);
     }
 
-    UpdateUserAdditionalInfo(infoID: InMemoryDBEntityId, newInfoValue: UserAdditionalInfo): boolean
-    {
-        if (this._usersAdditionalInfos.length <= infoID.id)
-            return false;
-
-        this._usersAdditionalInfos[infoID.id] = new UserAdditionalInfo(newInfoValue.aboutString);
-
-        return true;
-    }
-
 
     BindUserInfoToUser(userId: InMemoryDBEntityId, userInfoID: InMemoryDBEntityId): boolean
     {
@@ -237,6 +227,7 @@ export class InMemoryDatabase implements IDatabase
     {
         if (this._optionGroups.length <= groupID.id)
             return null;
+
         return Object.assign({}, this._optionGroups[groupID.id]);
     }
 
@@ -265,9 +256,25 @@ export class InMemoryDatabase implements IDatabase
             return false;
 
         this._optionToOptionGroupMap.push([optionID, optionGroupID]);
-
         return true;
     }
+
+    GetOptionsIDsByGroupID(optionGroupID: InMemoryDBEntityId): DBEntityID[] | null
+    {
+        if (this._optionGroups.length <= optionGroupID.id)
+            return null;
+
+        //It wold be a disaster when test with it will fail, but "USE STREAMS DUA"
+        return this._optionToOptionGroupMap.filter((pair =>
+        {
+            return pair[1].id === optionGroupID.id;
+        })).map(pair =>
+        {
+            return pair[0];
+        });
+    }
+
+
 
     BindOptionToUser(optionID: InMemoryDBEntityId, userId: InMemoryDBEntityId): boolean
     {
@@ -282,7 +289,8 @@ export class InMemoryDatabase implements IDatabase
             return (opToUsrPair[0] === optionID) && (opToUsrPair[1] === userId);
         });
 
-        if (-1 === opToUsrPairIndex)
+        // Check option already assigned
+        if (-1 !== opToUsrPairIndex)
             return false;
 
         this._optionToUserMap.push([optionID, userId]);
@@ -290,5 +298,19 @@ export class InMemoryDatabase implements IDatabase
         return true;
     }
 
+    GetUserOptionsIDsByUserId(userID: InMemoryDBEntityId): DBEntityID[] | null
+    {
+        if (this._users.length <= userID.id)
+            return null;
 
+        let userOptionsPairs = this._optionToUserMap.filter((pair =>
+        {
+            return pair[1].id === userID.id;
+        }));
+
+        return userOptionsPairs.map(pair =>
+        {
+            return pair[0];
+        });
+    }
 }
