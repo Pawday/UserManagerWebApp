@@ -10,6 +10,7 @@ interface IDatabase
     CheckConnection(): boolean;
 
     ConvertToDBEntityIDFrom<Type>(value: Type): DBEntityID | null;
+    CheckIDsAreEqual(leftID: DBEntityID, rightID : DBEntityID): boolean;
 
     AddUser(user: User) : DBEntityID | null;
     GetUserById(userID: DBEntityID): User | null;
@@ -27,7 +28,8 @@ interface IDatabase
     UpdateUserAdditionalInfo(infoID: DBEntityID, newInfo: UserAdditionalInfo) : boolean;
 
     BindUserInfoToUser(userId: DBEntityID, userInfoID: DBEntityID) : boolean;
-
+    GetUserInfoIdByUserId(userId: DBEntityID): DBEntityID | null;
+    GetUserInfoByUserId(userId: DBEntityID): UserAdditionalInfo | null;
 
     AddOption(option: SelectableOption): DBEntityID | null;
     GetAllOptionsIDs(): DBEntityID[] | null;

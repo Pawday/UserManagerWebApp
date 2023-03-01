@@ -58,6 +58,11 @@ export class InMemoryDatabase implements IDatabase
         return new InMemoryDBEntityId(number);
     }
 
+    CheckIDsAreEqual(leftID: InMemoryDBEntityId, rightID: InMemoryDBEntityId): boolean
+    {
+        return (leftID.id === rightID.id);
+    }
+
     AddUser(user: User): DBEntityID | null
     {
         const index = this._users.push(user);
@@ -140,18 +145,42 @@ export class InMemoryDatabase implements IDatabase
             return true;
         }
 
+        // reassign to new info
         this._userToInfoMap[userToItsInfoPairIndex][1] = userInfoID;
 
         return true;
     }
 
-    AddOption(option: SelectableOption): DBEntityID | null
+    GetUserInfoIdByUserId(userId: InMemoryDBEntityId): InMemoryDBEntityId | null
+    {
+        let map = this._userToInfoMap.find(value => {
+            return value[0].id == userId.id;
+        });
+
+        if (!map) return null;
+
+        return new InMemoryDBEntityId(map[1].id);
+    }
+
+    GetUserInfoByUserId(userId: InMemoryDBEntityId): UserAdditionalInfo | null
+    {
+        let map = this._userToInfoMap.find(value => {
+            return value[0].id == userId.id;
+        });
+
+        if (!map) return null;
+
+        return Object.assign({}, this._usersAdditionalInfos[map[1].id]);
+    }
+
+
+    AddOption(option: SelectableOption): InMemoryDBEntityId | null
     {
         const index = this._options.push(option);
         return new InMemoryDBEntityId(index - 1);
     }
 
-    GetAllOptionsIDs(): DBEntityID[] | null
+    GetAllOptionsIDs(): InMemoryDBEntityId[] | null
     {
         if (this._options.length == 0) return null;
         return this._options.map((_, index) => new InMemoryDBEntityId(index));

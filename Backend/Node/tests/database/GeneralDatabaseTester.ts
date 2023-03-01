@@ -4,6 +4,7 @@ import {User, UserGender} from "../../src/api/database/entities/User";
 import {assert} from "chai";
 import {DBEntityID} from "../../src/api/database/entities/DBEntityID";
 import {UserAdditionalInfo} from "../../src/api/database/entities/UserAdditionalInfo";
+import {SelectableOption} from "../../src/api/database/entities/SelectableOption";
 
 
 // see https://www.typescriptlang.org/docs/handbook/2/functions.html#call-signatures
@@ -183,5 +184,162 @@ export class GeneralDatabaseTester
         assert(infoFromDB !== null);
 
         assert(UserAdditionalInfo.AreEqual(infoFromDB, info));
+    }
+
+    @test("BindUserinfoToUserTest")
+    BindUserinfoToUserTest()
+    {
+        const db = this.databaseMaker();
+
+        if (!GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
+
+        const info = new UserAdditionalInfo("Abote (aboba)");
+        const user = new User("a", "b", "c", UserGender.WOMAN);
+
+        let userId = db.AddUser(user);
+        let infoId = db.AddUserAdditionalInfo(info);
+
+        assert(infoId !== null && userId !== null);
+
+        let bindStatus = db.BindUserInfoToUser(userId, infoId);
+
+        assert(bindStatus);
+
+        let infoIdFromDb = db.GetUserInfoIdByUserId(userId);
+
+        assert(infoIdFromDb);
+
+        let infoFromDB = db.GetUserAdditionalInfoById(infoIdFromDb);
+
+        assert(infoFromDB);
+
+        assert(UserAdditionalInfo.AreEqual(infoFromDB, info));
+
+        let infoFromDBByUserID = db.GetUserInfoByUserId(userId);
+
+        assert(infoFromDBByUserID);
+
+        assert(UserAdditionalInfo.AreEqual(infoFromDBByUserID, infoFromDB));
+        assert(UserAdditionalInfo.AreEqual(infoFromDBByUserID, info));
+
+
+        // ------------------------Rebind test------------------------
+
+        const rebindInfo = new UserAdditionalInfo("Abate (alopapala)");
+        let rebindInfoID = db.AddUserAdditionalInfo(rebindInfo);
+
+        assert(rebindInfoID !== null);
+
+        let rebindStatus = db.BindUserInfoToUser(userId, rebindInfoID);
+
+        assert(rebindStatus);
+
+        let rebindInfoFromDBByUserID = db.GetUserInfoByUserId(userId);
+
+        assert(rebindInfoFromDBByUserID);
+
+        assert(UserAdditionalInfo.AreEqual(rebindInfoFromDBByUserID, rebindInfo));
+    }
+
+    @test("AddOptionTest")
+    AddOptionTest()
+    {
+        const db = this.databaseMaker();
+
+        if (!GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
+
+        const option = new SelectableOption("Option");
+
+        let optionId = db.AddOption(option);
+
+        assert(optionId);
+
+        let optionFromDB = db.GetOptionById(optionId);
+
+        assert(optionFromDB);
+
+        SelectableOption.AreEqual(option, optionFromDB);
+    }
+
+    private static GenerateOptionsAndSendThemToDBWithChecks(db: IDatabase, optionsAm: number)
+    {
+        const options: Array<SelectableOption> = new Array<SelectableOption>(optionsAm);
+        const optionsIds: Array<DBEntityID> = new Array<DBEntityID>(optionsAm);
+
+        for (let index = 0; index < options.length; index++)
+        {
+            options[index] = new SelectableOption(`TestOption_${index}`);
+            let optionID = db.AddOption(options[index]);
+            assert(optionID);
+            optionsIds[index] = optionID;
+        }
+        return {options, optionsIds};
+    }
+
+
+    @test("GetAllOptionsTest")
+    GetAllOptionsTest()
+    {
+        const db = this.databaseMaker();
+
+        if (!GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
+
+        const OPTIONS_AMOUNT = 100;
+
+        const {options, optionsIds} = GeneralDatabaseTester.GenerateOptionsAndSendThemToDBWithChecks(db, OPTIONS_AMOUNT);
+
+        let optionIDsFromDB = db.GetAllOptionsIDs();
+
+        assert(optionIDsFromDB);
+
+        assert(optionIDsFromDB.length === options.length)
+        assert(optionIDsFromDB.length === optionsIds.length)
+
+        for (let index = 0; index < optionIDsFromDB.length; index++)
+        {
+            let idToCompare = optionIDsFromDB[index];
+            let foundIndex = optionsIds.findIndex(id =>
+            {
+                return db.CheckIDsAreEqual(id, idToCompare);
+            });
+
+            assert(-1 !== foundIndex)
+        }
+    }
+
+    @test("GetOptionsByIDsTest")
+    GetOptionsByIDsTest()
+    {
+        const db = this.databaseMaker();
+
+        if (!GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
+
+        const OPTIONS_AMOUNT = 100;
+        const SUBSET_OPTIONS_AM = 34;
+
+        const {options, optionsIds} = GeneralDatabaseTester.GenerateOptionsAndSendThemToDBWithChecks(db, OPTIONS_AMOUNT);
+
+        let optionsSubset: Array<SelectableOption> = new Array<SelectableOption>(SUBSET_OPTIONS_AM);
+        let optionsIDsSubset: Array<DBEntityID> = new Array<DBEntityID>(SUBSET_OPTIONS_AM);
+
+        for (let index = 0; index < SUBSET_OPTIONS_AM; index++)
+        {
+            optionsSubset[index] = options[index];
+            optionsIDsSubset[index] = optionsIds[index];
+        }
+
+        let optionsSubsetFromDB = db.GetOptionsByIDs(optionsIDsSubset);
+
+        assert(optionsSubsetFromDB);
+        assert(optionsSubsetFromDB.length === optionsSubset.length);
+
+        for (let index = 0; index < optionsSubset.length; index++)
+        {
+            const optionToFind = optionsSubset[index];
+            assert(-1 !== optionsSubsetFromDB.findIndex(value =>
+            {
+                return SelectableOption.AreEqual(value, optionToFind);
+            }), `${index} ${optionToFind.name}`);
+        }
     }
 }
