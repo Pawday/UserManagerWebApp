@@ -11,15 +11,6 @@ const SOURCE_DIRECTORY = path.resolve(__dirname);
 const ts_sourcemap =
 {
     loader: "source-map-loader",
-    options:
-    {
-        filterSourceMappingUrl: (url, resourcePath) =>
-        {
-            console.log(url);
-            console.log(resourcePath);
-            return true;
-        }
-    }
 }
 
 

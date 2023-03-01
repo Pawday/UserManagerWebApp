@@ -1,6 +1,6 @@
 import React from "react";
 
-import LoginScreen from "./LoginScreen";
+import LoginScreen from "./loginScreen/LoginScreen";
 import {createEvent, createStore} from "effector";
 import {useStore} from "effector-react";
 
