@@ -49,11 +49,13 @@ export class InMemoryDatabase implements IDatabase
 
     ConvertToDBEntityIDFrom<Type>(value: Type): DBEntityID | null
     {
-        if (typeof(value) !== "string") return null;
+        if (typeof(value) !== "string")
+            return null;
 
         let number = parseInt(value);
 
-        if (isNaN(number)) return null;
+        if (isNaN(number))
+            return null;
 
         return new InMemoryDBEntityId(number);
     }
@@ -65,19 +67,21 @@ export class InMemoryDatabase implements IDatabase
 
     AddUser(user: User): DBEntityID | null
     {
-        const index = this._users.push(user);
+        const index = this._users.push(Object.assign({}, user));
         return new InMemoryDBEntityId(index - 1);
     }
 
     GetUserById(id: InMemoryDBEntityId): User | null
     {
-        if (this._users.length <= id.id) return null;
+        if (this._users.length <= id.id)
+            return null;
         return Object.assign({}, this._users[id.id]);
     }
 
     GetUsersByIds(usersIDs: InMemoryDBEntityId[]): User[] | null
     {
-        if (usersIDs.length > this._users.length) return null;
+        if (usersIDs.length > this._users.length)
+            return null;
 
         // Hello O(n^2)
         let foundUsers = this._users.filter((_, userIndex) =>
@@ -85,14 +89,16 @@ export class InMemoryDatabase implements IDatabase
             return usersIDs.find((userID) => {return userID.id === userIndex});
         });
 
-        if (foundUsers.length != usersIDs.length) return null;
+        if (foundUsers.length != usersIDs.length)
+            return null;
 
         return foundUsers;
     }
 
     UpdateUser(userID: InMemoryDBEntityId, newValue: User): boolean
     {
-        if (this._users.length <= userID.id) return false;
+        if (this._users.length <= userID.id)
+            return false;
 
         this._users[userID.id] = new User(
             newValue.name,
@@ -112,19 +118,21 @@ export class InMemoryDatabase implements IDatabase
 
     AddUserAdditionalInfo(info: UserAdditionalInfo): DBEntityID | null
     {
-        const index = this._usersAdditionalInfos.push(info);
+        const index = this._usersAdditionalInfos.push(Object.assign({}, info));
         return new InMemoryDBEntityId(index - 1);
     }
 
     GetUserAdditionalInfoById(infoId: InMemoryDBEntityId): UserAdditionalInfo | null
     {
-        if (this._usersAdditionalInfos.length <= infoId.id) return null;
+        if (this._usersAdditionalInfos.length <= infoId.id)
+            return null;
         return Object.assign({}, this._usersAdditionalInfos[infoId.id]);
     }
 
     UpdateUserAdditionalInfo(infoID: InMemoryDBEntityId, newInfoValue: UserAdditionalInfo): boolean
     {
-        if (this._usersAdditionalInfos.length <= infoID.id) return false;
+        if (this._usersAdditionalInfos.length <= infoID.id)
+            return false;
 
         this._usersAdditionalInfos[infoID.id] = new UserAdditionalInfo(newInfoValue.aboutString);
 
@@ -134,8 +142,10 @@ export class InMemoryDatabase implements IDatabase
 
     BindUserInfoToUser(userId: InMemoryDBEntityId, userInfoID: InMemoryDBEntityId): boolean
     {
-        if (this._users.length <= userId.id) return false;
-        if (this._usersAdditionalInfos.length <= userInfoID.id) return false;
+        if (this._users.length <= userId.id)
+            return false;
+        if (this._usersAdditionalInfos.length <= userInfoID.id)
+            return false;
 
         let userToItsInfoPairIndex = this._userToInfoMap.findIndex(usIdInfIdPair => usIdInfIdPair[0] === userId);
 
@@ -157,7 +167,8 @@ export class InMemoryDatabase implements IDatabase
             return value[0].id == userId.id;
         });
 
-        if (!map) return null;
+        if (!map)
+            return null;
 
         return new InMemoryDBEntityId(map[1].id);
     }
@@ -168,7 +179,8 @@ export class InMemoryDatabase implements IDatabase
             return value[0].id == userId.id;
         });
 
-        if (!map) return null;
+        if (!map)
+            return null;
 
         return Object.assign({}, this._usersAdditionalInfos[map[1].id]);
     }
@@ -176,57 +188,72 @@ export class InMemoryDatabase implements IDatabase
 
     AddOption(option: SelectableOption): InMemoryDBEntityId | null
     {
-        const index = this._options.push(option);
+        const index = this._options.push(Object.assign({}, option));
         return new InMemoryDBEntityId(index - 1);
     }
 
     GetAllOptionsIDs(): InMemoryDBEntityId[] | null
     {
-        if (this._options.length == 0) return null;
+        if (this._options.length == 0)
+            return null;
         return this._options.map((_, index) => new InMemoryDBEntityId(index));
     }
 
     GetOptionById(optionId: InMemoryDBEntityId): SelectableOption | null
     {
-        if (this._options.length <= optionId.id) return null;
+        if (this._options.length <= optionId.id)
+            return null;
         return Object.assign({}, this._options[optionId.id]);
     }
 
     IsOptionExistById(optionId: InMemoryDBEntityId): boolean
     {
-        return Object.assign({}, this._options.length <= optionId.id);
+        return this._options.length <= optionId.id;
     }
 
 
     GetOptionsByIDs(optionIDs: InMemoryDBEntityId[]): SelectableOption[] | null
     {
-        if (optionIDs.length > this._options.length) return null;
+        if (optionIDs.length > this._options.length)
+            return null;
 
         // O(n^2) in one line -> looks cool but unreadable
         let foundOptions = optionIDs.map(optionDBId => (this._options.find((_, optionIndex) => (optionDBId.id == optionIndex))));
 
-        if (foundOptions.findIndex(value => value === undefined) !== -1) return null;
+        if (foundOptions.findIndex(value => value === undefined) !== -1)
+            return null;
 
         return foundOptions as Array<SelectableOption>;
     }
 
 
-    AddOptionsGroup(group: SelectableOptionGroup): DBEntityID | null
+    AddOptionGroup(group: SelectableOptionGroup): DBEntityID | null
     {
-        const index = this._optionGroups.push(group);
+        const index = this._optionGroups.push(Object.assign({}, group));
         return new InMemoryDBEntityId(index - 1);
     }
 
+    GetOptionGroupByID(groupID: InMemoryDBEntityId): SelectableOptionGroup | null
+    {
+        if (this._optionGroups.length <= groupID.id)
+            return null;
+        return Object.assign({}, this._optionGroups[groupID.id]);
+    }
+
+
     GetAllOptionGroupsIDs(): DBEntityID[] | null
     {
-        if (this._options.length == 0) return null;
-        return this._options.map((_, index) => new InMemoryDBEntityId(index));
+        if (this._optionGroups.length == 0)
+            return null;
+        return this._optionGroups.map((_, index) => {return new InMemoryDBEntityId(index)});
     }
 
     BindOptionToOptionGroup(optionID: InMemoryDBEntityId, optionGroupID: InMemoryDBEntityId): boolean
     {
-        if (this._options.length <= optionID.id) return false;
-        if (this._optionGroups.length <= optionGroupID.id) return false;
+        if (this._options.length <= optionID.id)
+            return false;
+        if (this._optionGroups.length <= optionGroupID.id)
+            return false;
 
         const opToOpGroupMapPairId = this._optionToOptionGroupMap.findIndex(pair =>
         {
@@ -234,7 +261,8 @@ export class InMemoryDatabase implements IDatabase
         });
 
         // if provided option mapped to provided option group
-        if (-1 !== opToOpGroupMapPairId) return false;
+        if (-1 !== opToOpGroupMapPairId)
+            return false;
 
         this._optionToOptionGroupMap.push([optionID, optionGroupID]);
 
@@ -243,8 +271,10 @@ export class InMemoryDatabase implements IDatabase
 
     BindOptionToUser(optionID: InMemoryDBEntityId, userId: InMemoryDBEntityId): boolean
     {
-        if (this._options.length <= optionID.id) return false;
-        if (this._users.length <= userId.id) return false;
+        if (this._options.length <= optionID.id)
+            return false;
+        if (this._users.length <= userId.id)
+            return false;
 
 
         let opToUsrPairIndex = this._optionToUserMap.findIndex(opToUsrPair =>
@@ -252,7 +282,8 @@ export class InMemoryDatabase implements IDatabase
             return (opToUsrPair[0] === optionID) && (opToUsrPair[1] === userId);
         });
 
-        if (-1 === opToUsrPairIndex) return false;
+        if (-1 === opToUsrPairIndex)
+            return false;
 
         this._optionToUserMap.push([optionID, userId]);
 
