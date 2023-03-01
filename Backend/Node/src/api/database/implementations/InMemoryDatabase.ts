@@ -207,10 +207,17 @@ export class InMemoryDatabase implements IDatabase
         if (optionIDs.length > this._options.length)
             return null;
 
-        // O(n^2) in one line -> looks cool but unreadable
-        let foundOptions = optionIDs.map(optionDBId => (this._options.find((_, optionIndex) => (optionDBId.id == optionIndex))));
 
-        if (foundOptions.findIndex(value => value === undefined) !== -1)
+        let foundOptions = optionIDs.map((optionID) =>
+        {
+            if (this._options.length <= optionID.id) return null;
+            return this._options[optionID.id];
+        }).filter((optionOrNull) =>
+        {
+            return (optionOrNull !== null);
+        });
+
+        if (foundOptions.length !== optionIDs.length)
             return null;
 
         return foundOptions as Array<SelectableOption>;

@@ -10,7 +10,7 @@ import {assert} from "chai";
     {
         super();
         this.databaseMaker = () => {return new InMemoryDatabase()};
-        this.randomIdMaker = () => {return new InMemoryDBEntityId(9999999999)}
+        this.notExistedIdMaker = () => {return new InMemoryDBEntityId(9999999999)}
     }
 
     @test("ConvertIDTest")

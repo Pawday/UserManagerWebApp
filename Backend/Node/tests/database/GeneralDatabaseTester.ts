@@ -10,14 +10,14 @@ import {SelectableOptionGroup} from "../../src/api/database/entities/SelectableO
 
 // see https://www.typescriptlang.org/docs/handbook/2/functions.html#call-signatures
 export interface DatabaseMaker {(): IDatabase; }
-export interface RandomIDMaker {(): DBEntityID; }
+export interface NotExistedIDMaker {(): DBEntityID; }
 
 
 
 export class GeneralDatabaseTester
 {
     protected databaseMaker: DatabaseMaker;
-    protected randomIdMaker: RandomIDMaker;
+    protected notExistedIdMaker: NotExistedIDMaker;
 
     private static GenerateUsersAndSendThemToDBWithNullCheck(database: IDatabase,usersAmount: number): [User[], DBEntityID[]]
     {
@@ -55,6 +55,8 @@ export class GeneralDatabaseTester
         return connectionStatus;
     }
 
+
+
     @test("AccessToNotExistedTest")
     AccessToNotExistedTest()
     {
@@ -62,7 +64,7 @@ export class GeneralDatabaseTester
 
         if (!GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
 
-        let randomId = this.randomIdMaker();
+        let randomId = this.notExistedIdMaker();
 
         assert(null === db.GetAllOptionsIDs());
         assert(null === db.GetAllOptionGroupsIDs());
@@ -87,6 +89,111 @@ export class GeneralDatabaseTester
         assert(null === db.GetOptionGroupByID(randomId));
         assert(null === db.GetOptionsIDsByGroupID(randomId));
     }
+
+
+    @test("GetUsersWithMissInIDsTest")
+    GetUsersWithMissInIDsTest()
+    {
+        const db = this.databaseMaker();
+
+        if (!GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
+
+
+        const user1 = new User("TestUser_1", "TestEmait_1", "TestPhone_1", UserGender.WOMAN);
+        const user2 = new User("TestUser_2", "TestEmait_2", "TestPhone_2", UserGender.WOMAN);
+        const user3 = new User("TestUser_3", "TestEmait_3", "TestPhone_3", UserGender.WOMAN);
+        const user4 = new User("TestUser_4", "TestEmait_4", "TestPhone_4", UserGender.WOMAN);
+
+        const user1ID = db.AddUser(user1);
+        const user2ID = db.AddUser(user2);
+        const user3ID = db.AddUser(user3);
+        const user4ID = db.AddUser(user4);
+
+        assert(user1ID && user2ID && user3ID && user4ID);
+
+        const allUsersFromDB = db.GetUsersByIds([user1ID, user2ID, user3ID, user4ID])
+
+        assert(allUsersFromDB);
+
+        assert(allUsersFromDB.length === 4);
+
+        let randomId = this.notExistedIdMaker();
+
+        const nullUsersBecauseOneIDFail = db.GetUsersByIds([user1ID, user2ID, user3ID, randomId]);
+
+        assert(nullUsersBecauseOneIDFail === null);
+
+    }
+
+    @test("BindNotExistedInfoToUserTest")
+    BindNotExistedInfoToUserTest()
+    {
+        const db = this.databaseMaker();
+
+        if (!GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
+
+        const user = new User("User", "Email", "Phone", UserGender.MAN);
+
+        let userId = db.AddUser(user);
+
+        assert(userId);
+
+        let fakeID = this.notExistedIdMaker();
+
+        assert(false === db.BindUserInfoToUser(userId, fakeID));
+    }
+
+    @test("GetOptionsWithMissInIDsTest")
+    GetOptionsWithMissInIDsTest()
+    {
+        const db = this.databaseMaker();
+
+        if (!GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
+
+        const option1 = new SelectableOption("Option_1");
+        const option2 = new SelectableOption("Option_2");
+
+        const option1ID = db.AddOption(option1);
+        const option2ID = db.AddOption(option2);
+
+        assert(option1ID && option2ID);
+
+        let sameOptions = db.GetOptionsByIDs([option1ID, option2ID]);
+
+        assert(sameOptions);
+        assert(2 === sameOptions.length);
+
+        let fakeID = this.notExistedIdMaker();
+
+        let nullOptionBecauseMissOneID = db.GetOptionsByIDs([option1ID, fakeID]);
+
+        assert(null === nullOptionBecauseMissOneID);
+
+    }
+
+    @test("BindOptionToOptionGroupWithNotExistedGroupTest")
+    BindOptionToOptionGroupWithNotExistedGroupTest()
+    {
+        const db = this.databaseMaker();
+
+        if (!GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
+
+        const option = new SelectableOption("TestOption");
+
+        const optionID = db.AddOption(option);
+
+        assert(optionID);
+
+        const fakeID = this.notExistedIdMaker();
+
+        let bindStatus = db.BindOptionToOptionGroup(optionID, fakeID);
+
+        assert(false === bindStatus);
+    }
+
+
+    //BindOptionToUser (haz option bot not a user)
+
 
     @test("PutAndGetUser")
     PutAndGetUser()
@@ -490,6 +597,11 @@ export class GeneralDatabaseTester
         SelectableOption.AreEqual(option3, option3FromDB);
         SelectableOption.AreEqual(option4NoBind, option4FromDB);
 
+
+        //Bind same option again
+        let doubleAssignStatus = db.BindOptionToOptionGroup(option3ID, groupID);
+        assert(false === doubleAssignStatus);
+
     }
 
     @test("BindOptionToUserTest")
@@ -545,5 +657,12 @@ export class GeneralDatabaseTester
         SelectableOption.AreEqual(option2, option2FromDB);
         SelectableOption.AreEqual(option3, option3FromDB);
         SelectableOption.AreEqual(option4NoBind, option4FromDB);
+
+
+        //Test not existing user
+
+        let fakeID = this.notExistedIdMaker();
+
+        assert(false === db.BindOptionToUser(option3ID, fakeID));
     }
 }
