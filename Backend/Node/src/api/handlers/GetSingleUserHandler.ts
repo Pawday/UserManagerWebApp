@@ -1,14 +1,22 @@
 import {Request, Response} from "express";
 import {APIError, APIErrorType, APIResponse} from "../APIResponse";
 import APIDatabase from "../APIDatabase";
-import {CheckDBConnectionAndSendError} from "./ResponseUtils";
+import {CheckDBConnectionAndSendError, SendInputNotProvidedError} from "./ResponseUtils";
 
 async function GetSingleUserHandler(req: Request, resp: Response)
 {
     if (!CheckDBConnectionAndSendError(resp)) return;
 
     let apiResp: APIResponse = new APIResponse();
-    let userIDInput = req.params.user_id;
+    let userIDInput = req.body.user_id;
+
+    if (!userIDInput)
+    {
+        SendInputNotProvidedError(resp, "user_id");
+        return;
+    }
+
+
 
     const userId = APIDatabase.ConvertToDBEntityIDFrom(userIDInput);
 
@@ -19,7 +27,7 @@ async function GetSingleUserHandler(req: Request, resp: Response)
         return;
     }
 
-    apiResp.response = APIDatabase.GetUserById(userId); // if not found it will be "null"
+    apiResp.response = APIDatabase.GetUserById(userId)?.asPublicObject; // if not found it will be "null"
     apiResp.SendTo(resp);
 }
 

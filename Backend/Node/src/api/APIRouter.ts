@@ -3,16 +3,18 @@ import BodyParser from "body-parser";
 
 import APIErrorHandler from "./APIErrorHandler";
 
+import AuthenticateHandler from "./handlers/AuthenticateHandler";
 
-import TokenAuthorization from "./authorize/TokenAuthorization";
-import AdminAuthorization from "./authorize/AdminAuthorization"
+import TokenAuthorization from "./auth/TokenAuthorization";
+import RootAuthorization from "./auth/RootAuthorization"
 
-import PostSingleUserHandler from "./handlers/PostSingleUserHandler";
+import AddSingleUserHandler from "./handlers/PostSingleUserHandler";
 import GetSingleUserHandler from "./handlers/GetSingleUserHandler";
 import GetMultipleUsersHandler from "./handlers/GetMultipleUsersHandler";
 import GetAllUsersIDSHandler from "./handlers/GetAllUsersIDSHandler";
 import DatabaseInitialiseHandler from "./handlers/DatabaseInitialiseHandler";
 import PostSingleUserInfoHandler from "./handlers/PostSingleUserInfoHandler";
+
 
 
 const APIRouter = Express.Router();
@@ -22,17 +24,18 @@ APIRouter.use(BodyParser.json({limit : "10mb"}));
 
 // Request info
 
-// TODO: next 2 routs fight each other
-APIRouter.post("/user/info", TokenAuthorization, AdminAuthorization, PostSingleUserInfoHandler);
-APIRouter.post("/user/:user_id", TokenAuthorization, AdminAuthorization, GetSingleUserHandler);
+APIRouter.post("/auth", AuthenticateHandler);
+
+APIRouter.post("/user/info", TokenAuthorization, RootAuthorization, PostSingleUserInfoHandler);
+APIRouter.post("/user/get", TokenAuthorization, RootAuthorization, GetSingleUserHandler);
 
 
-APIRouter.post("/users", TokenAuthorization, AdminAuthorization, GetMultipleUsersHandler);
+APIRouter.post("/users", TokenAuthorization, RootAuthorization, GetMultipleUsersHandler);
 
-APIRouter.post("/users/ids", TokenAuthorization, AdminAuthorization, GetAllUsersIDSHandler);
-APIRouter.post("/user", TokenAuthorization, AdminAuthorization, PostSingleUserHandler);
+APIRouter.post("/users/ids", TokenAuthorization, RootAuthorization, GetAllUsersIDSHandler);
+APIRouter.post("/user/add", TokenAuthorization, RootAuthorization, AddSingleUserHandler);
 
-APIRouter.post("/db/init", TokenAuthorization, AdminAuthorization, DatabaseInitialiseHandler);
+APIRouter.post("/db/init", TokenAuthorization, RootAuthorization, DatabaseInitialiseHandler);
 
 
 

@@ -1,5 +1,4 @@
 import {Response} from "express";
-import assert from "assert";
 
 
 export enum APIErrorType
@@ -8,6 +7,7 @@ export enum APIErrorType
     INVALID_INPUT,
     DATABASE_ERROR,
     AUTHORIZE_ERROR,
+    AUTHENTICATE_ERROR,
     NOT_FOUND_ERROR
 }
 
@@ -62,14 +62,14 @@ export class APIResponse
 
         switch (this._error.GetErrorType())
         {
-            case APIErrorType.UNKNOWN_ERROR:
-            case APIErrorType.DATABASE_ERROR: return 500;
+            case APIErrorType.UNKNOWN_ERROR: return 500;
+            case APIErrorType.DATABASE_ERROR: return 503;
             case APIErrorType.INVALID_INPUT: return 400;
             case APIErrorType.AUTHORIZE_ERROR: return 403;
+            case APIErrorType.AUTHENTICATE_ERROR: return 401;
             case APIErrorType.NOT_FOUND_ERROR: return 404;
+            default: throw Error("Not handled map APIErrorType to HTTPCode");
         }
-
-        throw Error("Not handled map APIErrorType to HTTPCode");
     }
 
     public SendTo(resp: Response)
