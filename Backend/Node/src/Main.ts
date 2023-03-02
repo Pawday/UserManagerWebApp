@@ -3,7 +3,12 @@ import Express from 'express';
 import APIRouter from "./api/APIRouter";
 import NotApiCallHandler from "./NotApiCallHandler";
 
-import MongooseInit from "./MongooseInit";
+import {RootUser} from "./RootUser";
+
+RootUser.Init("admin", "123456");
+
+console.log(`Root login: admin`)
+console.log(`Root password: 123456`)
 
 
 let app = Express();
