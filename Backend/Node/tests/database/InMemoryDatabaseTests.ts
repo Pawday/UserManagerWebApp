@@ -1,7 +1,8 @@
-import {GeneralDatabaseTester} from "./GeneralDatabaseTester";
 import {test, suite} from "@testdeck/mocha";
-import {InMemoryDatabase, InMemoryDBEntityId} from "../../src/api/database/implementations/InMemoryDatabase";
 import {assert} from "chai";
+
+import {GeneralDatabaseTester} from "./GeneralDatabaseTester";
+import {InMemoryDatabase, InMemoryDBEntityId} from "../../src/api/database/implementations/InMemoryDatabase";
 
 
 @suite class InMemoryDatabaseTests extends GeneralDatabaseTester

@@ -1,7 +1,8 @@
 import {test} from '@testdeck/mocha';
+import {assert} from "chai";
+
 import IDatabase from "../../src/api/database/IDatabase";
 import {User, UserGender} from "../../src/api/database/entities/User";
-import {assert} from "chai";
 import {DBEntityID} from "../../src/api/database/entities/DBEntityID";
 import {UserAdditionalInfo} from "../../src/api/database/entities/UserAdditionalInfo";
 import {SelectableOption} from "../../src/api/database/entities/SelectableOption";
