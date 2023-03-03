@@ -4,6 +4,7 @@ import LoginScreen from "./loginScreen/LoginScreen";
 import {createStore} from "effector";
 import {useStore} from "effector-react";
 import {authenticateUserFx} from "./loginScreen/LoginEvents";
+import {EditScreen} from "./editScreen/EditScreen";
 
 class ApplicationState
 {
@@ -14,19 +15,13 @@ class ApplicationState
         this._token = token;
     }
 
-
-    temporary_get_for_demo()
-    {
-        return this._token;
-    }
-
     public HasToken() : boolean
     {
         return !(this._token === undefined);
     }
 }
 
-const applicationStateStore = createStore<ApplicationState>(new ApplicationState());
+export const applicationStateStore = createStore<ApplicationState>(new ApplicationState());
 
 
 applicationStateStore.on(authenticateUserFx.doneData, (state, payload) =>
@@ -41,7 +36,7 @@ export default function Application()
     if (!currenState.HasToken())
         return <LoginScreen />
 
-    return <h1>Hello {currenState.temporary_get_for_demo()}</h1>
+    return <EditScreen />
 
 }
 
