@@ -1,3 +1,6 @@
+import {IGNORE_AUTH} from "../DEV_SWITCHES";
+
+
 import {NextFunction, Request, Response} from "express";
 import {APIError, APIErrorType, APIResponse} from "../APIResponse";
 import {SendInputNotValidError} from "../handlers/ResponseUtils";
@@ -7,6 +10,12 @@ const ROOT_TOKEN_LIFETIME_IN_SEC: number = 1000;
 
 function RootAuthorization(req: Request, resp: Response, next: NextFunction)
 {
+    if (IGNORE_AUTH)
+    {
+        next();
+        return;
+    }
+
     let apiErrorResponse: APIResponse = new APIResponse();
 
     let token: string = req.body.token;

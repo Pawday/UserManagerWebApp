@@ -25,7 +25,7 @@ export class User
         this._gender = gender;
     }
 
-    get asPublicObject(): object
+    AsPublicObject(): object
     {
         return {
             name: this._name,

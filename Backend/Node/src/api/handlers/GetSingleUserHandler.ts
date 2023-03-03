@@ -17,7 +17,6 @@ async function GetSingleUserHandler(req: Request, resp: Response)
     }
 
 
-
     const userId = APIDatabase.ConvertToDBEntityIDFrom(userIDInput);
 
     if (userId == null)
@@ -27,7 +26,7 @@ async function GetSingleUserHandler(req: Request, resp: Response)
         return;
     }
 
-    apiResp.response = APIDatabase.GetUserById(userId)?.asPublicObject; // if not found it will be "null"
+    apiResp.response = APIDatabase.GetUserById(userId)?.AsPublicObject(); // if not found it will be "null"
     apiResp.SendTo(resp);
 }
 

@@ -1,13 +1,13 @@
 import Express from "express";
+
+import cors from "cors";
 import BodyParser from "body-parser";
 
 import APIErrorHandler from "./APIErrorHandler";
-
 import AuthenticateHandler from "./handlers/AuthenticateHandler";
 
 import TokenAuthorization from "./auth/TokenAuthorization";
 import RootAuthorization from "./auth/RootAuthorization"
-
 import AddSingleUserHandler from "./handlers/PostSingleUserHandler";
 import GetSingleUserHandler from "./handlers/GetSingleUserHandler";
 import GetMultipleUsersHandler from "./handlers/GetMultipleUsersHandler";
@@ -22,7 +22,17 @@ const APIRouter = Express.Router();
 APIRouter.use(APIErrorHandler);
 APIRouter.use(BodyParser.json({limit : "10mb"}));
 
-// Request info
+
+const corsParams =
+{
+    credentials: true,
+    origin: true
+};
+
+APIRouter.use(cors(corsParams));
+
+APIRouter.options("*", cors(corsParams));
+
 
 APIRouter.post("/auth", AuthenticateHandler);
 
@@ -42,8 +52,8 @@ APIRouter.post("/db/init", TokenAuthorization, RootAuthorization, DatabaseInitia
 
 APIRouter.all("*", (req, resp) =>
 {
-    resp.send("Not found api entry " + req.url + " \n Invalid route for /api");
     resp.statusCode = 400;
+    resp.send("Not found api entry " + req.url + " \n Invalid route for /api");
     resp.end();
 });
 

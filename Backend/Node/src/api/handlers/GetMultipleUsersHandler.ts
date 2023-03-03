@@ -39,12 +39,21 @@ async function GetMultipleUsersHandler(req: Request, resp: Response)
         validatedUserIdList.push(dbIdOrNull);
     }
 
-    let users = APIDatabase.GetUsersByIds(validatedUserIdList);
+    let users: User[] | null = APIDatabase.GetUsersByIds(validatedUserIdList);
 
-    apiResp.response = users?.map((value: User | null) =>
+    if (!users)
     {
-        return value?.asPublicObject || null
-    });
+        if (!CheckDBConnectionAndSendError(resp))
+            return;
+
+        apiResp.response = [];
+    }
+    else
+        apiResp.response = users.map((user) =>
+        {
+            return user.AsPublicObject();
+        });
+
     apiResp.SendTo(resp);
 }
 
