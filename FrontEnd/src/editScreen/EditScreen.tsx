@@ -1,6 +1,5 @@
 import React from "react";
-import {Button, Container} from "@mui/material";
-import AddIcon from '@mui/icons-material/Add';
+import {Container} from "@mui/material";
 import EditableUsersTable from "./EditableUsersTable";
 
 
@@ -13,7 +12,6 @@ export function EditScreen()
             minHeight: "100%"
         }}>
 
-        <Button variant="contained" color="success" startIcon={<AddIcon />}>Добавить</Button>
 
         <EditableUsersTable />
 
