@@ -1,8 +1,9 @@
 import React from "react";
 
 import LoginScreen from "./loginScreen/LoginScreen";
-import {createEvent, createStore} from "effector";
+import {createStore} from "effector";
 import {useStore} from "effector-react";
+import {authenticateUserFx} from "./loginScreen/LoginEvents";
 
 class ApplicationState
 {
@@ -27,11 +28,10 @@ class ApplicationState
 
 const applicationStateStore = createStore<ApplicationState>(new ApplicationState());
 
-export const set_token_event = createEvent<string>("set_user_token");
 
-applicationStateStore.on<string>(set_token_event, (state, newToken) =>
+applicationStateStore.on(authenticateUserFx.doneData, (state, payload) =>
 {
-    return new ApplicationState(newToken);
+    return new ApplicationState(payload.token);
 });
 
 export default function Application()

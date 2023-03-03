@@ -12,16 +12,16 @@ export class FormState
 
     constructor
     (
-        isUserValid: boolean,
-        userInputErrorMassage: string,
+        isLoginValid: boolean,
+        loginInputErrorMassage: string,
         isPasswordValid: boolean,
         passwordInputErrorMassage: string,
         formMessage: string,
         formAvailable: boolean
     )
     {
-        this._isUserValid = isUserValid;
-        this._userInputHint = userInputErrorMassage;
+        this._isUserValid = isLoginValid;
+        this._userInputHint = loginInputErrorMassage;
         this._isPasswordValid = isPasswordValid;
         this._passwordInputHint = passwordInputErrorMassage;
         this._formMessage = formMessage;
