@@ -1,12 +1,12 @@
 import {Request, Response} from "express";
+import {CheckDBConnectionAndSendError} from "./ResponseUtils";
 import {APIResponse} from "../APIResponse";
 import APIDatabase from "../APIDatabase";
-import {CheckDBConnectionAndSendError} from "./ResponseUtils";
 import {ValidateUserIDInput} from "./ValidateRequestInputTools";
 
-async function GetSingleUserHandler(req: Request, resp: Response)
+export default async function DeleteUserHandler(req: Request, resp: Response)
 {
-    if (!CheckDBConnectionAndSendError(resp)) return;
+    CheckDBConnectionAndSendError(resp);
 
     let apiResp: APIResponse = new APIResponse();
 
@@ -14,8 +14,6 @@ async function GetSingleUserHandler(req: Request, resp: Response)
 
     if (userId === null) return;
 
-    apiResp.response = APIDatabase.GetUserById(userId)?.AsPublicObject(); // if not found it will be "null"
+    apiResp.response = APIDatabase.DeleteUserByID(userId);
     apiResp.SendTo(resp);
 }
-
-export default GetSingleUserHandler;

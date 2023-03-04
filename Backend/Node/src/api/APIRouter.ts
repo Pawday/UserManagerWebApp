@@ -14,6 +14,7 @@ import GetMultipleUsersHandler from "./handlers/GetMultipleUsersHandler";
 import GetAllUsersIDSHandler from "./handlers/GetAllUsersIDSHandler";
 import DatabaseInitialiseHandler from "./handlers/DatabaseInitialiseHandler";
 import PostSingleUserInfoHandler from "./handlers/PostSingleUserInfoHandler";
+import DeleteUserHandler from "./handlers/DeleteUserHandler";
 
 
 
@@ -38,6 +39,7 @@ APIRouter.post("/auth", AuthenticateHandler);
 
 APIRouter.post("/user/info", TokenAuthorization, RootAuthorization, PostSingleUserInfoHandler);
 APIRouter.post("/user/get", TokenAuthorization, RootAuthorization, GetSingleUserHandler);
+APIRouter.post("/user/delete", TokenAuthorization, RootAuthorization, DeleteUserHandler);
 
 
 APIRouter.post("/users", TokenAuthorization, RootAuthorization, GetMultipleUsersHandler);
