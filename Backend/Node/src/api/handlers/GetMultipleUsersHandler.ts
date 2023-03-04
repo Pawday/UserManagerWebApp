@@ -16,10 +16,11 @@ async function GetMultipleUsersHandler(req: Request, resp: Response)
 
     let usersIdsArrayInput: Array<string> = req.body.user_ids;
 
-    if (!usersIdsArrayInput || !TypeTools.IsArray(usersIdsArrayInput))
+    if (usersIdsArrayInput === undefined || !TypeTools.IsArray(usersIdsArrayInput))
     {
         apiResp.error = new APIError(APIErrorType.INVALID_INPUT, "Array \"user_ids\" with user ids should be defined");
         apiResp.SendTo(resp);
+        return;
     }
 
     let validatedUserIdList = new Array<DBEntityID>();
@@ -27,7 +28,7 @@ async function GetMultipleUsersHandler(req: Request, resp: Response)
     // TODO: typescripts array assertions not right
     for (let i = 0; i < usersIdsArrayInput.length; i++)
     {
-        let dbIdOrNull = await APIDatabase.ConvertToDBEntityIDFrom<string>(usersIdsArrayInput[i]);
+        let dbIdOrNull = APIDatabase.ConvertToDBEntityIDFrom<string>(usersIdsArrayInput[i]);
 
         if (dbIdOrNull === null)
         {
@@ -51,7 +52,7 @@ async function GetMultipleUsersHandler(req: Request, resp: Response)
     else
         apiResp.response = users.map((user) =>
         {
-            return user.AsPublicObject();
+            return User.AsPublicObject(user);
         });
 
     apiResp.SendTo(resp);

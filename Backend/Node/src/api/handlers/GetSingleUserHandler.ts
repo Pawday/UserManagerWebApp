@@ -3,6 +3,7 @@ import {APIResponse} from "../APIResponse";
 import APIDatabase from "../APIDatabase";
 import {CheckDBConnectionAndSendError} from "./ResponseUtils";
 import {ValidateUserIDInput} from "./ValidateRequestInputTools";
+import {User} from "../database/entities/User";
 
 async function GetSingleUserHandler(req: Request, resp: Response)
 {
@@ -14,7 +15,9 @@ async function GetSingleUserHandler(req: Request, resp: Response)
 
     if (userId === null) return;
 
-    apiResp.response = (await APIDatabase.GetUserById(userId))?.AsPublicObject(); // if not found it will be "null"
+    let user = await APIDatabase.GetUserById(userId);
+
+    apiResp.response = user === null ? null : User.AsPublicObject(user);
     apiResp.SendTo(resp);
 }
 
