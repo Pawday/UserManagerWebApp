@@ -27,7 +27,7 @@ async function GetMultipleUsersHandler(req: Request, resp: Response)
     // TODO: typescripts array assertions not right
     for (let i = 0; i < usersIdsArrayInput.length; i++)
     {
-        let dbIdOrNull = APIDatabase.ConvertToDBEntityIDFrom<string>(usersIdsArrayInput[i]);
+        let dbIdOrNull = await APIDatabase.ConvertToDBEntityIDFrom<string>(usersIdsArrayInput[i]);
 
         if (dbIdOrNull === null)
         {
@@ -39,7 +39,7 @@ async function GetMultipleUsersHandler(req: Request, resp: Response)
         validatedUserIdList.push(dbIdOrNull);
     }
 
-    let users: User[] | null = APIDatabase.GetUsersByIds(validatedUserIdList);
+    let users: User[] | null = await APIDatabase.GetUsersByIds(validatedUserIdList);
 
     if (!users)
     {

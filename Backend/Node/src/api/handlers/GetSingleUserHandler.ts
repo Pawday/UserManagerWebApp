@@ -14,7 +14,7 @@ async function GetSingleUserHandler(req: Request, resp: Response)
 
     if (userId === null) return;
 
-    apiResp.response = APIDatabase.GetUserById(userId)?.AsPublicObject(); // if not found it will be "null"
+    apiResp.response = (await APIDatabase.GetUserById(userId))?.AsPublicObject(); // if not found it will be "null"
     apiResp.SendTo(resp);
 }
 

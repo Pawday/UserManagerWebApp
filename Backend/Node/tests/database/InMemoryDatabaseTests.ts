@@ -15,7 +15,7 @@ import {InMemoryDatabase, InMemoryDBEntityId} from "../../src/api/database/imple
     }
 
     @test("ConvertIDTest")
-    ConvertIDTest()
+    async ConvertIDTest()
     {
         const db = this.databaseMaker();
 
@@ -24,9 +24,9 @@ import {InMemoryDatabase, InMemoryDBEntityId} from "../../src/api/database/imple
         let invalidID = "invalid";
         let invalidID2 = 32465263;
 
-        let convertedID = db.ConvertToDBEntityIDFrom<String>(validID);
-        let convertedInvalidID = db.ConvertToDBEntityIDFrom<String>(invalidID);
-        let convertedInvalidID2 = db.ConvertToDBEntityIDFrom<number>(invalidID2);
+        let convertedID = await db.ConvertToDBEntityIDFrom<String>(validID);
+        let convertedInvalidID = await db.ConvertToDBEntityIDFrom<String>(invalidID);
+        let convertedInvalidID2 = await db.ConvertToDBEntityIDFrom<number>(invalidID2);
 
         assert(convertedID);
         assert(null === convertedInvalidID);

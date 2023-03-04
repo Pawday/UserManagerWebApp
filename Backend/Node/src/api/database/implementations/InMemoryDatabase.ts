@@ -63,7 +63,7 @@ export class InMemoryDatabase implements IDatabase
         return new InMemoryDBEntityId(number);
     }
 
-    private CheckUserDeleted(userId: InMemoryDBEntityId): boolean
+    private async CheckUserDeleted(userId: InMemoryDBEntityId): Promise<boolean>
     {
         if (this._users.length <= userId.id)
             return false;
@@ -84,24 +84,24 @@ export class InMemoryDatabase implements IDatabase
         return (leftID.id === rightID.id);
     }
 
-    AddUser(user: User): DBEntityID | null
+    async AddUser(user: User): Promise<DBEntityID | null>
     {
         const index = this._users.push(Object.assign({}, user));
         return new InMemoryDBEntityId(index - 1);
     }
 
-    GetUserById(userID: InMemoryDBEntityId): User | null
+    async GetUserById(userID: InMemoryDBEntityId): Promise<User | null>
     {
         if (this._users.length <= userID.id)
             return null;
 
-        if(this.CheckUserDeleted(userID))
+        if(await this.CheckUserDeleted(userID))
             return null;
 
         return Object.assign({}, this._users[userID.id]);
     }
 
-    GetUsersByIds(usersIDs: InMemoryDBEntityId[]): User[] | null
+    async GetUsersByIds(usersIDs: InMemoryDBEntityId[]): Promise<User[] | null>
     {
         if (usersIDs.length > this._users.length)
             return null;
@@ -110,9 +110,9 @@ export class InMemoryDatabase implements IDatabase
         let foundUsers = this._users.filter((_, userIndex) =>
         {
             return usersIDs.find((userID) => {return userID.id === userIndex});
-        }).filter((user,userIndex) =>
+        }).filter(async (user,userIndex) =>
         {
-            if(this.CheckUserDeleted(new InMemoryDBEntityId(userIndex)))
+            if(await this.CheckUserDeleted(new InMemoryDBEntityId(userIndex)))
                 return false;
 
             return user;
@@ -124,12 +124,12 @@ export class InMemoryDatabase implements IDatabase
         return foundUsers;
     }
 
-    UpdateUser(userID: InMemoryDBEntityId, newValue: User): boolean
+    async UpdateUser(userID: InMemoryDBEntityId, newValue: User): Promise<boolean>
     {
         if (this._users.length <= userID.id)
             return false;
 
-        if(this.CheckUserDeleted(userID))
+        if(await this.CheckUserDeleted(userID))
             return false;
 
         this._users[userID.id] = new User(
@@ -142,12 +142,12 @@ export class InMemoryDatabase implements IDatabase
         return true;
     }
 
-    DeleteUserByID(userID: InMemoryDBEntityId): boolean
+    async DeleteUserByID(userID: InMemoryDBEntityId): Promise<boolean>
     {
         if (this._users.length <= userID.id)
             return false;
 
-        if(this.CheckUserDeleted(userID))
+        if(await this.CheckUserDeleted(userID))
             return false;
 
         const alreadyRemovedUser = this._deletedUsers.find((id) =>
@@ -166,23 +166,23 @@ export class InMemoryDatabase implements IDatabase
 
 
 
-    GetAllUsersIDs(): DBEntityID[]
+    async GetAllUsersIDs(): Promise<DBEntityID[]>
     {
         return this._users
             .map((_, index) => new InMemoryDBEntityId(index))
-            .filter((userId,index) =>
+            .filter(async (userId,index) =>
         {
-            return !this.CheckUserDeleted(userId);
+            return !await this.CheckUserDeleted(userId);
         });
     }
 
-    AddUserAdditionalInfo(info: UserAdditionalInfo): DBEntityID | null
+    async AddUserAdditionalInfo(info: UserAdditionalInfo): Promise<DBEntityID | null>
     {
         const index = this._usersAdditionalInfos.push(Object.assign({}, info));
         return new InMemoryDBEntityId(index - 1);
     }
 
-    GetUserAdditionalInfoById(infoId: InMemoryDBEntityId): UserAdditionalInfo | null
+    async GetUserAdditionalInfoById(infoId: InMemoryDBEntityId): Promise<UserAdditionalInfo | null>
     {
         if (this._usersAdditionalInfos.length <= infoId.id)
             return null;
@@ -190,14 +190,14 @@ export class InMemoryDatabase implements IDatabase
     }
 
 
-    BindUserInfoToUser(userId: InMemoryDBEntityId, userInfoID: InMemoryDBEntityId): boolean
+    async BindUserInfoToUser(userId: InMemoryDBEntityId, userInfoID: InMemoryDBEntityId): Promise<boolean>
     {
         if (this._users.length <= userId.id)
             return false;
         if (this._usersAdditionalInfos.length <= userInfoID.id)
             return false;
 
-        if(this.CheckUserDeleted(userId))
+        if(await this.CheckUserDeleted(userId))
             return false;
 
         let userToItsInfoPairIndex = this._userToInfoMap.findIndex(usIdInfIdPair => usIdInfIdPair[0] === userId);
@@ -214,9 +214,9 @@ export class InMemoryDatabase implements IDatabase
         return true;
     }
 
-    GetUserInfoIdByUserId(userId: InMemoryDBEntityId): InMemoryDBEntityId | null
+    async GetUserInfoIdByUserId(userId: InMemoryDBEntityId): Promise<InMemoryDBEntityId | null>
     {
-        if(this.CheckUserDeleted(userId))
+        if(await this.CheckUserDeleted(userId))
             return null;
 
         let map = this._userToInfoMap.find(value => {
@@ -229,9 +229,9 @@ export class InMemoryDatabase implements IDatabase
         return new InMemoryDBEntityId(map[1].id);
     }
 
-    GetUserInfoByUserId(userId: InMemoryDBEntityId): UserAdditionalInfo | null
+    async GetUserInfoByUserId(userId: InMemoryDBEntityId): Promise<UserAdditionalInfo | null>
     {
-        if(this.CheckUserDeleted(userId))
+        if(await this.CheckUserDeleted(userId))
             return null;
 
         let map = this._userToInfoMap.find(value => {
@@ -245,33 +245,33 @@ export class InMemoryDatabase implements IDatabase
     }
 
 
-    AddOption(option: SelectableOption): InMemoryDBEntityId | null
+    async AddOption(option: SelectableOption): Promise<InMemoryDBEntityId | null>
     {
         const index = this._options.push(Object.assign({}, option));
         return new InMemoryDBEntityId(index - 1);
     }
 
-    GetAllOptionsIDs(): InMemoryDBEntityId[] | null
+    async GetAllOptionsIDs(): Promise<InMemoryDBEntityId[] | null>
     {
         if (this._options.length == 0)
             return null;
         return this._options.map((_, index) => new InMemoryDBEntityId(index));
     }
 
-    GetOptionById(optionId: InMemoryDBEntityId): SelectableOption | null
+    async GetOptionById(optionId: InMemoryDBEntityId): Promise<SelectableOption | null>
     {
         if (this._options.length <= optionId.id)
             return null;
         return Object.assign({}, this._options[optionId.id]);
     }
 
-    IsOptionExistById(optionId: InMemoryDBEntityId): boolean
+    async IsOptionExistById(optionId: InMemoryDBEntityId): Promise<boolean>
     {
         return this._options.length <= optionId.id;
     }
 
 
-    GetOptionsByIDs(optionIDs: InMemoryDBEntityId[]): SelectableOption[] | null
+    async GetOptionsByIDs(optionIDs: InMemoryDBEntityId[]): Promise<SelectableOption[] | null>
     {
         if (optionIDs.length > this._options.length)
             return null;
@@ -293,13 +293,13 @@ export class InMemoryDatabase implements IDatabase
     }
 
 
-    AddOptionGroup(group: SelectableOptionGroup): DBEntityID | null
+    async AddOptionGroup(group: SelectableOptionGroup): Promise<DBEntityID | null>
     {
         const index = this._optionGroups.push(Object.assign({}, group));
         return new InMemoryDBEntityId(index - 1);
     }
 
-    GetOptionGroupByID(groupID: InMemoryDBEntityId): SelectableOptionGroup | null
+    async GetOptionGroupByID(groupID: InMemoryDBEntityId): Promise<SelectableOptionGroup | null>
     {
         if (this._optionGroups.length <= groupID.id)
             return null;
@@ -308,14 +308,14 @@ export class InMemoryDatabase implements IDatabase
     }
 
 
-    GetAllOptionGroupsIDs(): DBEntityID[] | null
+    async GetAllOptionGroupsIDs(): Promise<DBEntityID[] | null>
     {
         if (this._optionGroups.length == 0)
             return null;
         return this._optionGroups.map((_, index) => {return new InMemoryDBEntityId(index)});
     }
 
-    BindOptionToOptionGroup(optionID: InMemoryDBEntityId, optionGroupID: InMemoryDBEntityId): boolean
+    async BindOptionToOptionGroup(optionID: InMemoryDBEntityId, optionGroupID: InMemoryDBEntityId): Promise<boolean>
     {
         if (this._options.length <= optionID.id)
             return false;
@@ -335,7 +335,7 @@ export class InMemoryDatabase implements IDatabase
         return true;
     }
 
-    GetOptionsIDsByGroupID(optionGroupID: InMemoryDBEntityId): DBEntityID[] | null
+    async GetOptionsIDsByGroupID(optionGroupID: InMemoryDBEntityId): Promise<DBEntityID[] | null>
     {
         if (this._optionGroups.length <= optionGroupID.id)
             return null;
@@ -352,14 +352,14 @@ export class InMemoryDatabase implements IDatabase
 
 
 
-    BindOptionToUser(optionID: InMemoryDBEntityId, userId: InMemoryDBEntityId): boolean
+    async BindOptionToUser(optionID: InMemoryDBEntityId, userId: InMemoryDBEntityId): Promise<boolean>
     {
         if (this._options.length <= optionID.id)
             return false;
         if (this._users.length <= userId.id)
             return false;
 
-        if(this.CheckUserDeleted(userId))
+        if(await this.CheckUserDeleted(userId))
             return false;
 
         let opToUsrPairIndex = this._optionToUserMap.findIndex(opToUsrPair =>
@@ -376,12 +376,12 @@ export class InMemoryDatabase implements IDatabase
         return true;
     }
 
-    GetUserOptionsIDsByUserId(userID: InMemoryDBEntityId): DBEntityID[] | null
+    async GetUserOptionsIDsByUserId(userID: InMemoryDBEntityId): Promise<DBEntityID[] | null>
     {
         if (this._users.length <= userID.id)
             return null;
 
-        if(this.CheckUserDeleted(userID))
+        if(await this.CheckUserDeleted(userID))
             return null;
 
         let userOptionsPairs = this._optionToUserMap.filter((pair =>

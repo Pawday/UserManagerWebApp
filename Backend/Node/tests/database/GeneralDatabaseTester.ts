@@ -20,7 +20,7 @@ export class GeneralDatabaseTester
     protected databaseMaker: DatabaseMaker;
     protected notExistedIdMaker: NotExistedIDMaker;
 
-    private static GenerateUsersAndSendThemToDBWithNullCheck(database: IDatabase,usersAmount: number): [User[], DBEntityID[]]
+    private static async GenerateUsersAndSendThemToDBWithNullCheck(database: IDatabase,usersAmount: number): Promise<[User[], DBEntityID[]]>
     {
         const users: User[] = new Array<User>(usersAmount);
 
@@ -35,23 +35,25 @@ export class GeneralDatabaseTester
             );
         }
 
-        let usersIdsWithPotentialNulls = users.map((user: User) =>
+
+        let usersIdsWithPotentialNulls = await Promise.all(users.map((user: User) =>
         {
             return database.AddUser(user);
-        });
+        }));
+
 
         let userIds = usersIdsWithPotentialNulls.map((userIdOrNull, index) =>
         {
             assert(userIdOrNull !== null, `Database with user № ${index} returned null`);
-            return userIdOrNull;
+            return  userIdOrNull;
         });
 
         return [users, userIds];
     }
 
-    private static AssertDatabaseConnected(database: IDatabase) : boolean
+    private static async AssertDatabaseConnected(database: IDatabase) : Promise<boolean>
     {
-        let connectionStatus = database.CheckConnection();
+        let connectionStatus = await database.CheckConnection();
         assert(connectionStatus, "Database is not connected (IDatabase.CheckConnection returned false)");
         return connectionStatus;
     }
@@ -59,7 +61,7 @@ export class GeneralDatabaseTester
 
 
     @test("AccessToNotExistedTest")
-    AccessToNotExistedTest()
+    async AccessToNotExistedTest()
     {
         const db = this.databaseMaker();
 
@@ -67,33 +69,33 @@ export class GeneralDatabaseTester
 
         let randomId = this.notExistedIdMaker();
 
-        assert(null === db.GetAllOptionsIDs());
-        assert(null === db.GetAllOptionGroupsIDs());
+        assert(null === await db.GetAllOptionsIDs());
+        assert(null === await db.GetAllOptionGroupsIDs());
 
-        assert(null === db.GetOptionsByIDs([randomId]));
-        assert(null === db.GetUsersByIds([randomId]));
+        assert(null === await db.GetOptionsByIDs([randomId]));
+        assert(null === await db.GetUsersByIds([randomId]));
 
-        assert(false === db.BindUserInfoToUser(randomId, randomId));
-        assert(false === db.BindOptionToOptionGroup(randomId, randomId));
-        assert(false === db.BindOptionToUser(randomId, randomId));
-
-
-        assert(false === db.UpdateUser(randomId, new User("NewName", "NewEmail", "NewPhone", UserGender.WOMAN)));
+        assert(false === await db.BindUserInfoToUser(randomId, randomId));
+        assert(false === await db.BindOptionToOptionGroup(randomId, randomId));
+        assert(false === await db.BindOptionToUser(randomId, randomId));
 
 
-        assert(null === db.GetOptionById(randomId));
-        assert(null === db.GetUserById(randomId));
-        assert(null === db.GetUserOptionsIDsByUserId(randomId));
-        assert(null === db.GetUserInfoByUserId(randomId));
-        assert(null === db.GetUserAdditionalInfoById(randomId));
-        assert(null === db.GetUserInfoIdByUserId(randomId));
-        assert(null === db.GetOptionGroupByID(randomId));
-        assert(null === db.GetOptionsIDsByGroupID(randomId));
+        assert(false === await db.UpdateUser(randomId, new User("NewName", "NewEmail", "NewPhone", UserGender.WOMAN)));
+
+
+        assert(null === await db.GetOptionById(randomId));
+        assert(null === await db.GetUserById(randomId));
+        assert(null === await db.GetUserOptionsIDsByUserId(randomId));
+        assert(null === await db.GetUserInfoByUserId(randomId));
+        assert(null === await db.GetUserAdditionalInfoById(randomId));
+        assert(null === await db.GetUserInfoIdByUserId(randomId));
+        assert(null === await db.GetOptionGroupByID(randomId));
+        assert(null === await db.GetOptionsIDsByGroupID(randomId));
     }
 
 
     @test("GetUsersWithMissInIDsTest")
-    GetUsersWithMissInIDsTest()
+    async GetUsersWithMissInIDsTest()
     {
         const db = this.databaseMaker();
 
@@ -105,14 +107,14 @@ export class GeneralDatabaseTester
         const user3 = new User("TestUser_3", "TestEmail_3", "TestPhone_3", UserGender.WOMAN);
         const user4 = new User("TestUser_4", "TestEmail_4", "TestPhone_4", UserGender.WOMAN);
 
-        const user1ID = db.AddUser(user1);
-        const user2ID = db.AddUser(user2);
-        const user3ID = db.AddUser(user3);
-        const user4ID = db.AddUser(user4);
+        const user1ID = await db.AddUser(user1);
+        const user2ID = await db.AddUser(user2);
+        const user3ID = await db.AddUser(user3);
+        const user4ID = await db.AddUser(user4);
 
         assert(user1ID && user2ID && user3ID && user4ID);
 
-        const allUsersFromDB = db.GetUsersByIds([user1ID, user2ID, user3ID, user4ID])
+        const allUsersFromDB = await db.GetUsersByIds([user1ID, user2ID, user3ID, user4ID])
 
         assert(allUsersFromDB);
 
@@ -120,74 +122,74 @@ export class GeneralDatabaseTester
 
         let randomId = this.notExistedIdMaker();
 
-        const nullUsersBecauseOneIDFail = db.GetUsersByIds([user1ID, user2ID, user3ID, randomId]);
+        const nullUsersBecauseOneIDFail = await db.GetUsersByIds([user1ID, user2ID, user3ID, randomId]);
 
         assert(nullUsersBecauseOneIDFail === null);
 
     }
 
     @test("BindNotExistedInfoToUserTest")
-    BindNotExistedInfoToUserTest()
+    async BindNotExistedInfoToUserTest()
     {
         const db = this.databaseMaker();
 
-        if (!GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
+        if (!await GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
 
         const user = new User("User", "Email", "Phone", UserGender.MAN);
 
-        let userId = db.AddUser(user);
+        let userId = await db.AddUser(user);
 
         assert(userId);
 
         let fakeID = this.notExistedIdMaker();
 
-        assert(false === db.BindUserInfoToUser(userId, fakeID));
+        assert(false === await db.BindUserInfoToUser(userId, fakeID));
     }
 
     @test("GetOptionsWithMissInIDsTest")
-    GetOptionsWithMissInIDsTest()
+    async GetOptionsWithMissInIDsTest()
     {
         const db = this.databaseMaker();
 
-        if (!GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
+        if (!await GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
 
         const option1 = new SelectableOption("Option_1");
         const option2 = new SelectableOption("Option_2");
 
-        const option1ID = db.AddOption(option1);
-        const option2ID = db.AddOption(option2);
+        const option1ID = await db.AddOption(option1);
+        const option2ID = await db.AddOption(option2);
 
         assert(option1ID && option2ID);
 
-        let sameOptions = db.GetOptionsByIDs([option1ID, option2ID]);
+        let sameOptions = await db.GetOptionsByIDs([option1ID, option2ID]);
 
         assert(sameOptions);
         assert(2 === sameOptions.length);
 
         let fakeID = this.notExistedIdMaker();
 
-        let nullOptionBecauseMissOneID = db.GetOptionsByIDs([option1ID, fakeID]);
+        let nullOptionBecauseMissOneID = await db.GetOptionsByIDs([option1ID, fakeID]);
 
         assert(null === nullOptionBecauseMissOneID);
 
     }
 
     @test("BindOptionToOptionGroupWithNotExistedGroupTest")
-    BindOptionToOptionGroupWithNotExistedGroupTest()
+    async BindOptionToOptionGroupWithNotExistedGroupTest()
     {
         const db = this.databaseMaker();
 
-        if (!GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
+        if (!await GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
 
         const option = new SelectableOption("TestOption");
 
-        const optionID = db.AddOption(option);
+        const optionID = await db.AddOption(option);
 
         assert(optionID);
 
         const fakeID = this.notExistedIdMaker();
 
-        let bindStatus = db.BindOptionToOptionGroup(optionID, fakeID);
+        let bindStatus = await db.BindOptionToOptionGroup(optionID, fakeID);
 
         assert(false === bindStatus);
     }
@@ -197,18 +199,18 @@ export class GeneralDatabaseTester
 
 
     @test("PutAndGetUser")
-    PutAndGetUser()
+    async PutAndGetUser()
     {
         const db = this.databaseMaker();
 
-        if (!GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
+        if (!await GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
 
         const user: User = new User("a", "Asd", "asd", UserGender.WOMAN);
-        let userId = db.AddUser(user);
+        let userId = await db.AddUser(user);
 
         assert(userId !== null);
 
-        let userFromDb = db.GetUserById(userId);
+        let userFromDb = await db.GetUserById(userId);
 
         assert(userFromDb !== null);
 
@@ -216,28 +218,28 @@ export class GeneralDatabaseTester
     }
 
     @test("PutAndDeleteUserTest")
-    PutAndDeleteUserTest()
+    async PutAndDeleteUserTest()
     {
         const db = this.databaseMaker();
 
-        if (!GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
+        if (!await GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
 
         const userToDelete: User = new User("a", "Asd", "asd", UserGender.WOMAN);
-        let userId = db.AddUser(userToDelete);
+        let userId = await db.AddUser(userToDelete);
 
         assert(userId !== null);
 
-        let userFromDb = db.GetUserById(userId);
+        let userFromDb = await db.GetUserById(userId);
 
         assert(userFromDb !== null);
 
         assert(User.AreEqual(userFromDb, userToDelete));
 
-        const deleteStatus = db.DeleteUserByID(userId);
+        const deleteStatus = await db.DeleteUserByID(userId);
 
         assert(deleteStatus);
 
-        let notExistedRemovedUser = db.GetUserById(userId);
+        let notExistedRemovedUser = await db.GetUserById(userId);
 
         assert(notExistedRemovedUser === null);
     }
@@ -245,15 +247,15 @@ export class GeneralDatabaseTester
 
 
     @test("PutAndGetUsersTest")
-    PutAndGetUsersTest()
+    async PutAndGetUsersTest()
     {
         const db = this.databaseMaker();
 
-        if (!GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
+        if (!await GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
 
-        let [users, userIds] = GeneralDatabaseTester.GenerateUsersAndSendThemToDBWithNullCheck(db, 100);
+        let [users, userIds] = await GeneralDatabaseTester.GenerateUsersAndSendThemToDBWithNullCheck(db, 100);
 
-        let usersFromDB = db.GetUsersByIds(userIds);
+        let usersFromDB = await db.GetUsersByIds(userIds);
 
         assert(usersFromDB !== null, "Database didnt return provided users");
 
@@ -268,11 +270,11 @@ export class GeneralDatabaseTester
     }
 
     @test("EditUserTest")
-    EditUserTest()
+    async EditUserTest()
     {
         const db = this.databaseMaker();
 
-        if (!GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
+        if (!await GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
 
         const user: User = new User(
             "Name",
@@ -281,11 +283,11 @@ export class GeneralDatabaseTester
             UserGender.WOMAN
         );
 
-        let userId = db.AddUser(user);
+        let userId = await db.AddUser(user);
 
         assert(userId !== null);
 
-        let sameUserFromDB = db.GetUserById(userId);
+        let sameUserFromDB = await db.GetUserById(userId);
 
         assert(sameUserFromDB !== null);
 
@@ -298,9 +300,9 @@ export class GeneralDatabaseTester
             UserGender.MAN
         );
 
-        assert(db.UpdateUser(userId, newUser), "Database is not able to update user");
+        assert(await db.UpdateUser(userId, newUser), "Database is not able to update user");
 
-        const newUserFromDB = db.GetUserById(userId);
+        const newUserFromDB = await db.GetUserById(userId);
 
         assert(newUserFromDB !== null);
 
@@ -310,19 +312,19 @@ export class GeneralDatabaseTester
 
 
     @test("GetAllUsersIdsTest")
-    GetAllUsersIdsTest()
+    async GetAllUsersIdsTest()
     {
         const db = this.databaseMaker();
 
-        if (!GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
+        if (!await GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
 
-        let [users, usersIds] = GeneralDatabaseTester.GenerateUsersAndSendThemToDBWithNullCheck(db, 43);
+        let [users, usersIds] = await GeneralDatabaseTester.GenerateUsersAndSendThemToDBWithNullCheck(db, 43);
 
-        let allUsersIDs = db.GetAllUsersIDs();
+        let allUsersIDs = await db.GetAllUsersIDs();
 
         assert(allUsersIDs.length == usersIds.length, "Database didnt return all users");
 
-        let sameUsers = db.GetUsersByIds(allUsersIDs);
+        let sameUsers = await db.GetUsersByIds(allUsersIDs);
 
         assert(sameUsers !== null);
 
@@ -340,20 +342,20 @@ export class GeneralDatabaseTester
     }
 
     @test("AddAndGetUserAdditionalInfoTest")
-    AddGetAndUpdateUserAdditionalInfoTest()
+    async AddGetAndUpdateUserAdditionalInfoTest()
     {
         const db = this.databaseMaker();
 
-        if (!GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
+        if (!await GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
 
         const info = new UserAdditionalInfo("Some about string")
 
 
-        let addUserAdditionalInfoID = db.AddUserAdditionalInfo(info);
+        let addUserAdditionalInfoID = await db.AddUserAdditionalInfo(info);
 
         assert(addUserAdditionalInfoID !== null);
 
-        let infoFromDB = db.GetUserAdditionalInfoById(addUserAdditionalInfoID);
+        let infoFromDB = await db.GetUserAdditionalInfoById(addUserAdditionalInfoID);
 
         assert(infoFromDB !== null);
 
@@ -361,37 +363,37 @@ export class GeneralDatabaseTester
     }
 
     @test("BindUserinfoToUserTest")
-    BindUserinfoToUserTest()
+    async BindUserinfoToUserTest()
     {
         const db = this.databaseMaker();
 
-        if (!GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
+        if (!await GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
 
         // this "Abote" string is not a mistake
         // and its helped me find user and additional info related tests place
         const info = new UserAdditionalInfo("Abote (aboba)");
         const user = new User("a", "b", "c", UserGender.WOMAN);
 
-        let userId = db.AddUser(user);
-        let infoId = db.AddUserAdditionalInfo(info);
+        let userId = await db.AddUser(user);
+        let infoId = await db.AddUserAdditionalInfo(info);
 
         assert(infoId !== null && userId !== null);
 
-        let bindStatus = db.BindUserInfoToUser(userId, infoId);
+        let bindStatus = await db.BindUserInfoToUser(userId, infoId);
 
         assert(bindStatus);
 
-        let infoIdFromDb = db.GetUserInfoIdByUserId(userId);
+        let infoIdFromDb = await db.GetUserInfoIdByUserId(userId);
 
         assert(infoIdFromDb);
 
-        let infoFromDB = db.GetUserAdditionalInfoById(infoIdFromDb);
+        let infoFromDB = await db.GetUserAdditionalInfoById(infoIdFromDb);
 
         assert(infoFromDB);
 
         assert(UserAdditionalInfo.AreEqual(infoFromDB, info));
 
-        let infoFromDBByUserID = db.GetUserInfoByUserId(userId);
+        let infoFromDBByUserID = await db.GetUserInfoByUserId(userId);
 
         assert(infoFromDBByUserID);
 
@@ -402,15 +404,15 @@ export class GeneralDatabaseTester
         // ------------------------Rebind test------------------------
 
         const rebindInfo = new UserAdditionalInfo("Abate (alopapala)");
-        let rebindInfoID = db.AddUserAdditionalInfo(rebindInfo);
+        let rebindInfoID = await db.AddUserAdditionalInfo(rebindInfo);
 
         assert(rebindInfoID !== null);
 
-        let rebindStatus = db.BindUserInfoToUser(userId, rebindInfoID);
+        let rebindStatus = await db.BindUserInfoToUser(userId, rebindInfoID);
 
         assert(rebindStatus);
 
-        let rebindInfoFromDBByUserID = db.GetUserInfoByUserId(userId);
+        let rebindInfoFromDBByUserID = await db.GetUserInfoByUserId(userId);
 
         assert(rebindInfoFromDBByUserID);
 
@@ -418,26 +420,26 @@ export class GeneralDatabaseTester
     }
 
     @test("AddOptionTest")
-    AddOptionTest()
+    async AddOptionTest()
     {
         const db = this.databaseMaker();
 
-        if (!GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
+        if (!await GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
 
         const option = new SelectableOption("Option");
 
-        let optionId = db.AddOption(option);
+        let optionId = await db.AddOption(option);
 
         assert(optionId);
 
-        let optionFromDB = db.GetOptionById(optionId);
+        let optionFromDB = await db.GetOptionById(optionId);
 
         assert(optionFromDB);
 
         SelectableOption.AreEqual(option, optionFromDB);
     }
 
-    private static GenerateOptionsAndSendThemToDBWithChecks(db: IDatabase, optionsAm: number)
+    private static async GenerateOptionsAndSendThemToDBWithChecks(db: IDatabase, optionsAm: number)
     {
         const options: Array<SelectableOption> = new Array<SelectableOption>(optionsAm);
         const optionsIds: Array<DBEntityID> = new Array<DBEntityID>(optionsAm);
@@ -445,9 +447,9 @@ export class GeneralDatabaseTester
         for (let index = 0; index < options.length; index++)
         {
             options[index] = new SelectableOption(`TestOption_${index}`);
-            let optionID = db.AddOption(options[index]);
+            let optionID = await db.AddOption(options[index]);
             assert(optionID);
-            db.IsOptionExistById(optionID);
+            await db.IsOptionExistById(optionID);
             optionsIds[index] = optionID;
         }
         return {options, optionsIds};
@@ -455,17 +457,17 @@ export class GeneralDatabaseTester
 
 
     @test("GetAllOptionsTest")
-    GetAllOptionsTest()
+    async GetAllOptionsTest()
     {
         const db = this.databaseMaker();
 
-        if (!GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
+        if (!await GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
 
         const OPTIONS_AMOUNT = 100;
 
-        const {options, optionsIds} = GeneralDatabaseTester.GenerateOptionsAndSendThemToDBWithChecks(db, OPTIONS_AMOUNT);
+        const {options, optionsIds} = await GeneralDatabaseTester.GenerateOptionsAndSendThemToDBWithChecks(db, OPTIONS_AMOUNT);
 
-        let optionIDsFromDB = db.GetAllOptionsIDs();
+        let optionIDsFromDB = await db.GetAllOptionsIDs();
 
         assert(optionIDsFromDB);
 
@@ -475,9 +477,9 @@ export class GeneralDatabaseTester
         for (let index = 0; index < optionIDsFromDB.length; index++)
         {
             let idToCompare = optionIDsFromDB[index];
-            let foundIndex = optionsIds.findIndex(id =>
+            let foundIndex = optionsIds.findIndex(async id =>
             {
-                return db.CheckIDsAreEqual(id, idToCompare);
+                return await db.CheckIDsAreEqual(id, idToCompare);
             });
 
             assert(-1 !== foundIndex)
@@ -485,16 +487,16 @@ export class GeneralDatabaseTester
     }
 
     @test("GetOptionsByIDsTest")
-    GetOptionsByIDsTest()
+    async GetOptionsByIDsTest()
     {
         const db = this.databaseMaker();
 
-        if (!GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
+        if (!await GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
 
         const OPTIONS_AMOUNT = 100;
         const SUBSET_OPTIONS_AM = 34;
 
-        const {options, optionsIds} = GeneralDatabaseTester.GenerateOptionsAndSendThemToDBWithChecks(db, OPTIONS_AMOUNT);
+        const {options, optionsIds} = await GeneralDatabaseTester.GenerateOptionsAndSendThemToDBWithChecks(db, OPTIONS_AMOUNT);
 
         let optionsSubset: Array<SelectableOption> = new Array<SelectableOption>(SUBSET_OPTIONS_AM);
         let optionsIDsSubset: Array<DBEntityID> = new Array<DBEntityID>(SUBSET_OPTIONS_AM);
@@ -505,7 +507,7 @@ export class GeneralDatabaseTester
             optionsIDsSubset[index] = optionsIds[index];
         }
 
-        let optionsSubsetFromDB = db.GetOptionsByIDs(optionsIDsSubset);
+        let optionsSubsetFromDB = await db.GetOptionsByIDs(optionsIDsSubset);
 
         assert(optionsSubsetFromDB);
         assert(optionsSubsetFromDB.length === optionsSubset.length);
@@ -522,19 +524,19 @@ export class GeneralDatabaseTester
 
 
     @test("AddAndGetOptionsGroupTest")
-    AddAndGetOptionsGroupTest()
+    async AddAndGetOptionsGroupTest()
     {
         const db = this.databaseMaker();
 
-        if (!GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
+        if (!await GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
 
 
         const group: SelectableOptionGroup = new SelectableOptionGroup("Group 1");
 
-        let groupID = db.AddOptionGroup(group);
+        let groupID = await db.AddOptionGroup(group);
         assert(groupID);
 
-        let groupFromDB = db.GetOptionGroupByID(groupID);
+        let groupFromDB = await db.GetOptionGroupByID(groupID);
 
         assert(groupFromDB);
 
@@ -542,11 +544,11 @@ export class GeneralDatabaseTester
     }
 
     @test("GetAllOptionGroupsIDsTest")
-    GetAllOptionGroupsIDsTest()
+    async GetAllOptionGroupsIDsTest()
     {
         const db = this.databaseMaker();
 
-        if (!GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
+        if (! await GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
 
         const groups: Array<SelectableOptionGroup> = new Array<SelectableOptionGroup>(100);
         const groupsIDs: Array<DBEntityID> = new Array<DBEntityID>(100);
@@ -554,12 +556,12 @@ export class GeneralDatabaseTester
         for (let index = 0; index < groups.length; index++)
         {
             groups[index] = new SelectableOptionGroup(`TestOptionGroup_${index}`);
-            let groupID = db.AddOptionGroup(groups[index]);
+            let groupID = await db.AddOptionGroup(groups[index]);
             assert(groupID);
             groupsIDs[index] = groupID;
         }
 
-        let allGroupsIDsFromDB = db.GetAllOptionGroupsIDs();
+        let allGroupsIDsFromDB = await db.GetAllOptionGroupsIDs();
 
         assert(allGroupsIDsFromDB);
 
@@ -569,18 +571,18 @@ export class GeneralDatabaseTester
         for (let index = 0; index < groupsIDs.length; index++)
         {
             let groupsIDToFind = groupsIDs[index];
-            assert(-1 !== allGroupsIDsFromDB.findIndex(id => {
-                return db.CheckIDsAreEqual(id,groupsIDToFind);
+            assert(-1 !== allGroupsIDsFromDB.findIndex(async id => {
+                return await db.CheckIDsAreEqual(id,groupsIDToFind);
             }));
         }
     }
 
     @test("BindOptionToOptionGroupTest")
-    BindOptionToOptionGroupTest()
+    async BindOptionToOptionGroupTest()
     {
         const db = this.databaseMaker();
 
-        if (!GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
+        if (!await GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
 
 
         let group: SelectableOptionGroup = new SelectableOptionGroup("TestGroup");
@@ -589,22 +591,22 @@ export class GeneralDatabaseTester
         let option3: SelectableOption = new SelectableOption("TestOption_3");
         let option4NoBind: SelectableOption = new SelectableOption("TestOption_4");
 
-        let groupID = db.AddOptionGroup(group);
+        let groupID = await db.AddOptionGroup(group);
 
         assert(groupID);
 
-        let option1ID = db.AddOption(option1);
-        let option2ID = db.AddOption(option2);
-        let option3ID = db.AddOption(option3);
-        let option4ID = db.AddOption(option4NoBind);
+        let option1ID = await db.AddOption(option1);
+        let option2ID = await db.AddOption(option2);
+        let option3ID = await db.AddOption(option3);
+        let option4ID = await db.AddOption(option4NoBind);
 
         assert(option1ID && option2ID && option3ID && option4ID);
 
-        assert(db.BindOptionToOptionGroup(option1ID, groupID));
-        assert(db.BindOptionToOptionGroup(option2ID, groupID));
-        assert(db.BindOptionToOptionGroup(option3ID, groupID));
+        assert(await db.BindOptionToOptionGroup(option1ID, groupID));
+        assert(await db.BindOptionToOptionGroup(option2ID, groupID));
+        assert(await db.BindOptionToOptionGroup(option3ID, groupID));
 
-        let optionsIDSFromDB = db.GetOptionsIDsByGroupID(groupID);
+        let optionsIDSFromDB = await db.GetOptionsIDsByGroupID(groupID);
 
         assert(optionsIDSFromDB);
 
@@ -615,10 +617,10 @@ export class GeneralDatabaseTester
         assert(-1 !== optionsIDSFromDB.findIndex((id) => {return db.CheckIDsAreEqual(id, option3ID!);}));
         assert(-1 === optionsIDSFromDB.findIndex((id) => {return db.CheckIDsAreEqual(id, option4ID!);}));
 
-        let option1FromDB = db.GetOptionById(option1ID);
-        let option2FromDB = db.GetOptionById(option2ID);
-        let option3FromDB = db.GetOptionById(option3ID);
-        let option4FromDB = db.GetOptionById(option4ID);
+        let option1FromDB = await db.GetOptionById(option1ID);
+        let option2FromDB = await db.GetOptionById(option2ID);
+        let option3FromDB = await db.GetOptionById(option3ID);
+        let option4FromDB = await db.GetOptionById(option4ID);
 
         assert(option1FromDB && option2FromDB && option3FromDB && option4FromDB);
 
@@ -629,17 +631,17 @@ export class GeneralDatabaseTester
 
 
         //Bind same option again
-        let doubleAssignStatus = db.BindOptionToOptionGroup(option3ID, groupID);
+        let doubleAssignStatus = await db.BindOptionToOptionGroup(option3ID, groupID);
         assert(false === doubleAssignStatus);
 
     }
 
     @test("BindOptionToUserTest")
-    BindOptionToUserTest()
+    async BindOptionToUserTest()
     {
         const db = this.databaseMaker();
 
-        if (!GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
+        if (!await GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
 
 
         let group: User = new User("TestName", "TestEmail", "TestPhone", UserGender.WOMAN);
@@ -648,23 +650,23 @@ export class GeneralDatabaseTester
         let option3: SelectableOption = new SelectableOption("TestOption_3");
         let option4NoBind: SelectableOption = new SelectableOption("TestOption_4");
 
-        let userId = db.AddUser(group);
+        let userId = await db.AddUser(group);
 
         assert(userId);
 
-        let option1ID = db.AddOption(option1);
-        let option2ID = db.AddOption(option2);
-        let option3ID = db.AddOption(option3);
-        let option4ID = db.AddOption(option4NoBind);
+        let option1ID = await db.AddOption(option1);
+        let option2ID = await db.AddOption(option2);
+        let option3ID = await db.AddOption(option3);
+        let option4ID = await db.AddOption(option4NoBind);
 
         assert(option1ID && option2ID && option3ID && option4ID);
 
-        assert(db.BindOptionToUser(option1ID, userId));
-        assert(!db.BindOptionToUser(option1ID, userId));
-        assert(db.BindOptionToUser(option2ID, userId));
-        assert(db.BindOptionToUser(option3ID, userId));
+        assert(await db.BindOptionToUser(option1ID, userId));
+        assert(!await db.BindOptionToUser(option1ID, userId));
+        assert(await db.BindOptionToUser(option2ID, userId));
+        assert(await db.BindOptionToUser(option3ID, userId));
 
-        let optionsIDSFromDB = db.GetUserOptionsIDsByUserId(userId);
+        let optionsIDSFromDB = await db.GetUserOptionsIDsByUserId(userId);
 
         assert(optionsIDSFromDB);
 
@@ -676,10 +678,10 @@ export class GeneralDatabaseTester
         assert(-1 === optionsIDSFromDB.findIndex((id) => {return db.CheckIDsAreEqual(id, option4ID!);}));
 
 
-        let option1FromDB = db.GetOptionById(option1ID);
-        let option2FromDB = db.GetOptionById(option2ID);
-        let option3FromDB = db.GetOptionById(option3ID);
-        let option4FromDB = db.GetOptionById(option4ID);
+        let option1FromDB = await db.GetOptionById(option1ID);
+        let option2FromDB = await db.GetOptionById(option2ID);
+        let option3FromDB = await db.GetOptionById(option3ID);
+        let option4FromDB = await db.GetOptionById(option4ID);
 
         assert(option1FromDB && option2FromDB && option3FromDB && option4FromDB);
 
@@ -693,6 +695,6 @@ export class GeneralDatabaseTester
 
         let fakeID = this.notExistedIdMaker();
 
-        assert(false === db.BindOptionToUser(option3ID, fakeID));
+        assert(false === await db.BindOptionToUser(option3ID, fakeID));
     }
 }

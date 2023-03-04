@@ -14,6 +14,6 @@ export default async function DeleteUserHandler(req: Request, resp: Response)
 
     if (userId === null) return;
 
-    apiResp.response = APIDatabase.DeleteUserByID(userId);
+    apiResp.response = await APIDatabase.DeleteUserByID(userId);
     apiResp.SendTo(resp);
 }

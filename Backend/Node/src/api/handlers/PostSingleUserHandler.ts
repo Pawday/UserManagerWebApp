@@ -1,9 +1,8 @@
 import {APIError, APIErrorType, APIResponse} from "../APIResponse";
-import {UserGender} from "../models/UserModel";
 import {Request, Response} from "express";
 import {CheckDBConnectionAndSendError, SendInputNotValidError, SendInputNotProvidedError} from "./ResponseUtils";
 import APIDatabase from "../APIDatabase";
-import {User} from "../database/entities/User";
+import {User, UserGender} from "../database/entities/User";
 
 
 async function PostSingleUserHandler(req: Request, resp: Response)
@@ -58,7 +57,7 @@ async function PostSingleUserHandler(req: Request, resp: Response)
     );
 
 
-    let addUserResult = APIDatabase.AddUser(postedUser);
+    let addUserResult = await APIDatabase.AddUser(postedUser);
 
 
     if (addUserResult === null)

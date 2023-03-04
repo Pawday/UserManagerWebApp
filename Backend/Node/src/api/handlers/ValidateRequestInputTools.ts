@@ -4,7 +4,7 @@ import {SendInputNotProvidedError} from "./ResponseUtils";
 import APIDatabase from "../APIDatabase";
 import {DBEntityID} from "../database/entities/DBEntityID";
 
-export function ValidateUserIDInput(req: Request, resp: Response): DBEntityID | null
+export async function ValidateUserIDInput(req: Request, resp: Response): Promise<DBEntityID | null>
 {
     let apiResp: APIResponse = new APIResponse();
 
@@ -16,7 +16,7 @@ export function ValidateUserIDInput(req: Request, resp: Response): DBEntityID | 
         return null;
     }
 
-    const userId = APIDatabase.ConvertToDBEntityIDFrom(userIDInput);
+    const userId = await APIDatabase.ConvertToDBEntityIDFrom(userIDInput);
 
     if (userId == null)
     {
