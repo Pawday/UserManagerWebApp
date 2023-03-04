@@ -100,10 +100,10 @@ export class GeneralDatabaseTester
         if (!GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
 
 
-        const user1 = new User("TestUser_1", "TestEmait_1", "TestPhone_1", UserGender.WOMAN);
-        const user2 = new User("TestUser_2", "TestEmait_2", "TestPhone_2", UserGender.WOMAN);
-        const user3 = new User("TestUser_3", "TestEmait_3", "TestPhone_3", UserGender.WOMAN);
-        const user4 = new User("TestUser_4", "TestEmait_4", "TestPhone_4", UserGender.WOMAN);
+        const user1 = new User("TestUser_1", "TestEmail_1", "TestPhone_1", UserGender.WOMAN);
+        const user2 = new User("TestUser_2", "TestEmail_2", "TestPhone_2", UserGender.WOMAN);
+        const user3 = new User("TestUser_3", "TestEmail_3", "TestPhone_3", UserGender.WOMAN);
+        const user4 = new User("TestUser_4", "TestEmail_4", "TestPhone_4", UserGender.WOMAN);
 
         const user1ID = db.AddUser(user1);
         const user2ID = db.AddUser(user2);
@@ -310,8 +310,8 @@ export class GeneralDatabaseTester
         }
     }
 
-    @test("AddAndGetUserAdditionalInfo")
-    AddGetAndUpdateUserAdditionalInfo()
+    @test("AddAndGetUserAdditionalInfoTest")
+    AddGetAndUpdateUserAdditionalInfoTest()
     {
         const db = this.databaseMaker();
 
@@ -339,7 +339,7 @@ export class GeneralDatabaseTester
         if (!GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
 
         // this "Abote" string is not a mistake
-        // and its helped me to find user and additional info related tests place
+        // and its helped me find user and additional info related tests place
         const info = new UserAdditionalInfo("Abote (aboba)");
         const user = new User("a", "b", "c", UserGender.WOMAN);
 
@@ -513,7 +513,7 @@ export class GeneralDatabaseTester
     }
 
     @test("GetAllOptionGroupsIDsTest")
-    GetAllOptionGroupsIDs()
+    GetAllOptionGroupsIDsTest()
     {
         const db = this.databaseMaker();
 
