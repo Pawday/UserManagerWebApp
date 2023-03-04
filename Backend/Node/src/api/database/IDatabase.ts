@@ -19,6 +19,8 @@ interface IDatabase
     GetUsersByIds(usersIDs: DBEntityID[]): User[] | null;
 
     UpdateUser(userID: DBEntityID, newValue: User): boolean;
+    DeleteUserByID(userID: DBEntityID): boolean;
+
     GetAllUsersIDs(): DBEntityID[];
 
 

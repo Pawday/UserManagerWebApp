@@ -18,6 +18,7 @@ export class InMemoryDBEntityId implements DBEntityID
 export class InMemoryDatabase implements IDatabase
 {
     private readonly _users: User[];
+    private readonly _deletedUsers: Array<InMemoryDBEntityId>;
     private readonly _usersAdditionalInfos: UserAdditionalInfo[];
     private readonly _options: SelectableOption[];
     private readonly _optionGroups: SelectableOptionGroup[];
@@ -36,6 +37,8 @@ export class InMemoryDatabase implements IDatabase
         this._usersAdditionalInfos = new Array<UserAdditionalInfo>();
         this._options = new Array<SelectableOption>();
         this._optionGroups = new Array<SelectableOptionGroup>();
+
+        this._deletedUsers = new Array<InMemoryDBEntityId>();
 
         this._userToInfoMap = new Array<[InMemoryDBEntityId, InMemoryDBEntityId]>();
         this._optionToOptionGroupMap = new Array<[InMemoryDBEntityId, InMemoryDBEntityId]>();
@@ -60,6 +63,22 @@ export class InMemoryDatabase implements IDatabase
         return new InMemoryDBEntityId(number);
     }
 
+    private CheckUserDeleted(userId: InMemoryDBEntityId): boolean
+    {
+        if (this._users.length <= userId.id)
+            return false;
+
+        let deletedUser = this._deletedUsers.find((deletedId) =>
+        {
+            return deletedId.id === userId.id;
+        });
+
+        if (deletedUser === undefined)
+            return false;
+
+        return true;
+    }
+
     CheckIDsAreEqual(leftID: InMemoryDBEntityId, rightID: InMemoryDBEntityId): boolean
     {
         return (leftID.id === rightID.id);
@@ -71,11 +90,15 @@ export class InMemoryDatabase implements IDatabase
         return new InMemoryDBEntityId(index - 1);
     }
 
-    GetUserById(id: InMemoryDBEntityId): User | null
+    GetUserById(userID: InMemoryDBEntityId): User | null
     {
-        if (this._users.length <= id.id)
+        if (this._users.length <= userID.id)
             return null;
-        return Object.assign({}, this._users[id.id]);
+
+        if(this.CheckUserDeleted(userID))
+            return null;
+
+        return Object.assign({}, this._users[userID.id]);
     }
 
     GetUsersByIds(usersIDs: InMemoryDBEntityId[]): User[] | null
@@ -87,6 +110,12 @@ export class InMemoryDatabase implements IDatabase
         let foundUsers = this._users.filter((_, userIndex) =>
         {
             return usersIDs.find((userID) => {return userID.id === userIndex});
+        }).filter((user,userIndex) =>
+        {
+            if(this.CheckUserDeleted(new InMemoryDBEntityId(userIndex)))
+                return false;
+
+            return user;
         });
 
         if (foundUsers.length != usersIDs.length)
@@ -100,6 +129,9 @@ export class InMemoryDatabase implements IDatabase
         if (this._users.length <= userID.id)
             return false;
 
+        if(this.CheckUserDeleted(userID))
+            return false;
+
         this._users[userID.id] = new User(
             newValue.name,
             newValue.email,
@@ -110,10 +142,38 @@ export class InMemoryDatabase implements IDatabase
         return true;
     }
 
+    DeleteUserByID(userID: InMemoryDBEntityId): boolean
+    {
+        if (this._users.length <= userID.id)
+            return false;
+
+        if(this.CheckUserDeleted(userID))
+            return false;
+
+        const alreadyRemovedUser = this._deletedUsers.find((id) =>
+        {
+            return id.id === userID.id;
+        });
+
+        if (alreadyRemovedUser !== undefined)
+            return false;
+
+        this._deletedUsers.push(userID);
+
+
+        return true;
+    }
+
+
 
     GetAllUsersIDs(): DBEntityID[]
     {
-        return this._users.map((_, index) => new InMemoryDBEntityId(index));
+        return this._users
+            .map((_, index) => new InMemoryDBEntityId(index))
+            .filter((userId,index) =>
+        {
+            return !this.CheckUserDeleted(userId);
+        });
     }
 
     AddUserAdditionalInfo(info: UserAdditionalInfo): DBEntityID | null
@@ -137,6 +197,9 @@ export class InMemoryDatabase implements IDatabase
         if (this._usersAdditionalInfos.length <= userInfoID.id)
             return false;
 
+        if(this.CheckUserDeleted(userId))
+            return false;
+
         let userToItsInfoPairIndex = this._userToInfoMap.findIndex(usIdInfIdPair => usIdInfIdPair[0] === userId);
 
         if (-1 === userToItsInfoPairIndex)
@@ -153,6 +216,9 @@ export class InMemoryDatabase implements IDatabase
 
     GetUserInfoIdByUserId(userId: InMemoryDBEntityId): InMemoryDBEntityId | null
     {
+        if(this.CheckUserDeleted(userId))
+            return null;
+
         let map = this._userToInfoMap.find(value => {
             return value[0].id == userId.id;
         });
@@ -165,6 +231,9 @@ export class InMemoryDatabase implements IDatabase
 
     GetUserInfoByUserId(userId: InMemoryDBEntityId): UserAdditionalInfo | null
     {
+        if(this.CheckUserDeleted(userId))
+            return null;
+
         let map = this._userToInfoMap.find(value => {
             return value[0].id == userId.id;
         });
@@ -271,7 +340,7 @@ export class InMemoryDatabase implements IDatabase
         if (this._optionGroups.length <= optionGroupID.id)
             return null;
 
-        //It wold be a disaster when test with it will fail, but "USE STREAMS DUA"
+
         return this._optionToOptionGroupMap.filter((pair =>
         {
             return pair[1].id === optionGroupID.id;
@@ -290,6 +359,8 @@ export class InMemoryDatabase implements IDatabase
         if (this._users.length <= userId.id)
             return false;
 
+        if(this.CheckUserDeleted(userId))
+            return false;
 
         let opToUsrPairIndex = this._optionToUserMap.findIndex(opToUsrPair =>
         {
@@ -308,6 +379,9 @@ export class InMemoryDatabase implements IDatabase
     GetUserOptionsIDsByUserId(userID: InMemoryDBEntityId): DBEntityID[] | null
     {
         if (this._users.length <= userID.id)
+            return null;
+
+        if(this.CheckUserDeleted(userID))
             return null;
 
         let userOptionsPairs = this._optionToUserMap.filter((pair =>

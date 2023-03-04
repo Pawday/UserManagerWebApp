@@ -215,8 +215,37 @@ export class GeneralDatabaseTester
         assert(User.AreEqual(userFromDb, user));
     }
 
-    @test("PutAndGetUsers")
-    PutAndGetUsers()
+    @test("PutAndDeleteUserTest")
+    PutAndDeleteUserTest()
+    {
+        const db = this.databaseMaker();
+
+        if (!GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
+
+        const userToDelete: User = new User("a", "Asd", "asd", UserGender.WOMAN);
+        let userId = db.AddUser(userToDelete);
+
+        assert(userId !== null);
+
+        let userFromDb = db.GetUserById(userId);
+
+        assert(userFromDb !== null);
+
+        assert(User.AreEqual(userFromDb, userToDelete));
+
+        const deleteStatus = db.DeleteUserByID(userId);
+
+        assert(deleteStatus);
+
+        let notExistedRemovedUser = db.GetUserById(userId);
+
+        assert(notExistedRemovedUser === null);
+    }
+
+
+
+    @test("PutAndGetUsersTest")
+    PutAndGetUsersTest()
     {
         const db = this.databaseMaker();
 
