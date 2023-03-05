@@ -25,13 +25,13 @@ export class User
         this._gender = gender;
     }
 
-    AsPublicObject(): object
+    public static AsPublicObject(user: User): object
     {
         return {
-            name: this._name,
-            email: this._email,
-            phone: this._phone,
-            gender: this._gender
+            name: user._name,
+            email: user._email,
+            phone: user._phone,
+            gender: user._gender
         }
     }
 
