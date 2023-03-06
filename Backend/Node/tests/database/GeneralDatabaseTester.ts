@@ -10,8 +10,9 @@ import {SelectableOptionGroup} from "../../src/api/database/entities/SelectableO
 
 
 // see https://www.typescriptlang.org/docs/handbook/2/functions.html#call-signatures
-export interface DatabaseMaker {(): IDatabase; }
+export interface DatabaseMaker {(): Promise<IDatabase>; }
 export interface NotExistedIDMaker {(): DBEntityID; }
+
 
 
 
@@ -36,9 +37,9 @@ export class GeneralDatabaseTester
         }
 
 
-        let usersIdsWithPotentialNulls = await Promise.all(users.map((user: User) =>
+        let usersIdsWithPotentialNulls = await Promise.all(users.map(async (user: User) =>
         {
-            return database.AddUser(user);
+            return (await database).AddUser(user);
         }));
 
 
@@ -53,7 +54,7 @@ export class GeneralDatabaseTester
 
     private static async AssertDatabaseConnected(database: IDatabase) : Promise<boolean>
     {
-        let connectionStatus = await database.CheckConnection();
+        let connectionStatus = (await database).CheckConnection();
         assert(connectionStatus, "Database is not connected (IDatabase.CheckConnection returned false)");
         return connectionStatus;
     }
@@ -63,9 +64,9 @@ export class GeneralDatabaseTester
     @test("AccessToNotExistedTest")
     async AccessToNotExistedTest()
     {
-        const db = this.databaseMaker();
+        const db = await this.databaseMaker();
 
-        if (!GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
+        if (!await GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
 
         let randomId = this.notExistedIdMaker();
 
@@ -97,7 +98,7 @@ export class GeneralDatabaseTester
     @test("GetUsersWithMissInIDsTest")
     async GetUsersWithMissInIDsTest()
     {
-        const db = this.databaseMaker();
+        const db = await this.databaseMaker();
 
         if (!GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
 
@@ -131,7 +132,7 @@ export class GeneralDatabaseTester
     @test("BindNotExistedInfoToUserTest")
     async BindNotExistedInfoToUserTest()
     {
-        const db = this.databaseMaker();
+        const db = await this.databaseMaker();
 
         if (!await GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
 
@@ -149,7 +150,7 @@ export class GeneralDatabaseTester
     @test("GetOptionsWithMissInIDsTest")
     async GetOptionsWithMissInIDsTest()
     {
-        const db = this.databaseMaker();
+        const db = await this.databaseMaker();
 
         if (!await GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
 
@@ -177,7 +178,7 @@ export class GeneralDatabaseTester
     @test("BindOptionToOptionGroupWithNotExistedGroupTest")
     async BindOptionToOptionGroupWithNotExistedGroupTest()
     {
-        const db = this.databaseMaker();
+        const db = await this.databaseMaker();
 
         if (!await GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
 
@@ -198,10 +199,10 @@ export class GeneralDatabaseTester
     //BindOptionToUser (haz option bot not a user)
 
 
-    @test("PutAndGetUser")
-    async PutAndGetUser()
+    @test("PutAndGetUserTest")
+    async PutAndGetUserTest()
     {
-        const db = this.databaseMaker();
+        const db = await this.databaseMaker();
 
         if (!await GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
 
@@ -215,12 +216,14 @@ export class GeneralDatabaseTester
         assert(userFromDb !== null);
 
         assert(User.AreEqual(userFromDb, user));
+
+        return;
     }
 
     @test("PutAndDeleteUserTest")
     async PutAndDeleteUserTest()
     {
-        const db = this.databaseMaker();
+        const db = await this.databaseMaker();
 
         if (!await GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
 
@@ -245,11 +248,10 @@ export class GeneralDatabaseTester
     }
 
 
-
     @test("PutAndGetUsersTest")
     async PutAndGetUsersTest()
     {
-        const db = this.databaseMaker();
+        const db = await this.databaseMaker();
 
         if (!await GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
 
@@ -267,12 +269,13 @@ export class GeneralDatabaseTester
             assert(User.AreEqual(user, users[index]), `From database user with index ${index} is not 
             equal to provided user with same index`);
         });
+        return;
     }
 
     @test("EditUserTest")
     async EditUserTest()
     {
-        const db = this.databaseMaker();
+        const db = await this.databaseMaker();
 
         if (!await GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
 
@@ -314,7 +317,7 @@ export class GeneralDatabaseTester
     @test("GetAllUsersIdsTest")
     async GetAllUsersIdsTest()
     {
-        const db = this.databaseMaker();
+        const db = await this.databaseMaker();
 
         if (!await GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
 
@@ -344,7 +347,7 @@ export class GeneralDatabaseTester
     @test("AddAndGetUserAdditionalInfoTest")
     async AddGetAndUpdateUserAdditionalInfoTest()
     {
-        const db = this.databaseMaker();
+        const db = await this.databaseMaker();
 
         if (!await GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
 
@@ -365,7 +368,7 @@ export class GeneralDatabaseTester
     @test("BindUserinfoToUserTest")
     async BindUserinfoToUserTest()
     {
-        const db = this.databaseMaker();
+        const db = await this.databaseMaker();
 
         if (!await GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
 
@@ -422,7 +425,7 @@ export class GeneralDatabaseTester
     @test("AddOptionTest")
     async AddOptionTest()
     {
-        const db = this.databaseMaker();
+        const db = await this.databaseMaker();
 
         if (!await GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
 
@@ -459,7 +462,7 @@ export class GeneralDatabaseTester
     @test("GetAllOptionsTest")
     async GetAllOptionsTest()
     {
-        const db = this.databaseMaker();
+        const db = await this.databaseMaker();
 
         if (!await GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
 
@@ -479,7 +482,7 @@ export class GeneralDatabaseTester
             let idToCompare = optionIDsFromDB[index];
             let foundIndex = optionsIds.findIndex(async id =>
             {
-                return await db.CheckIDsAreEqual(id, idToCompare);
+                return db.CheckIDsAreEqual(id, idToCompare);
             });
 
             assert(-1 !== foundIndex)
@@ -489,7 +492,7 @@ export class GeneralDatabaseTester
     @test("GetOptionsByIDsTest")
     async GetOptionsByIDsTest()
     {
-        const db = this.databaseMaker();
+        const db = await this.databaseMaker();
 
         if (!await GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
 
@@ -526,7 +529,7 @@ export class GeneralDatabaseTester
     @test("AddAndGetOptionsGroupTest")
     async AddAndGetOptionsGroupTest()
     {
-        const db = this.databaseMaker();
+        const db = await this.databaseMaker();
 
         if (!await GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
 
@@ -546,7 +549,7 @@ export class GeneralDatabaseTester
     @test("GetAllOptionGroupsIDsTest")
     async GetAllOptionGroupsIDsTest()
     {
-        const db = this.databaseMaker();
+        const db = await this.databaseMaker();
 
         if (! await GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
 
@@ -580,7 +583,7 @@ export class GeneralDatabaseTester
     @test("BindOptionToOptionGroupTest")
     async BindOptionToOptionGroupTest()
     {
-        const db = this.databaseMaker();
+        const db = await this.databaseMaker();
 
         if (!await GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
 
@@ -639,7 +642,7 @@ export class GeneralDatabaseTester
     @test("BindOptionToUserTest")
     async BindOptionToUserTest()
     {
-        const db = this.databaseMaker();
+        const db = await this.databaseMaker();
 
         if (!await GeneralDatabaseTester.AssertDatabaseConnected(db)) return;
 

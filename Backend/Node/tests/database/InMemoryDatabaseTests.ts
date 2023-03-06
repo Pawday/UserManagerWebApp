@@ -10,14 +10,14 @@ import {InMemoryDatabase, InMemoryDBEntityId} from "../../src/api/database/imple
     constructor()
     {
         super();
-        this.databaseMaker = () => {return new InMemoryDatabase()};
+        this.databaseMaker = () => Promise.resolve(new InMemoryDatabase());
         this.notExistedIdMaker = () => {return new InMemoryDBEntityId(9999999999)}
     }
 
     @test("ConvertIDTest")
     async ConvertIDTest()
     {
-        const db = this.databaseMaker();
+        const db = await this.databaseMaker();
 
 
         let validID = "1";

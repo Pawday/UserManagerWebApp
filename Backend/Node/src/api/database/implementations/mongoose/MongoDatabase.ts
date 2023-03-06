@@ -1,5 +1,5 @@
 import IDatabase from "../../IDatabase";
-import mongoose, {ConnectionStates, Schema} from "mongoose";
+import mongoose, {Types} from "mongoose";
 
 import UserSchema from "./schems/UserShema";
 import UserAdditionalInfoSchema from "./schems/UserAdditionalInfoSchema";
@@ -12,13 +12,11 @@ import {SelectableOption} from "../../entities/SelectableOption";
 import {SelectableOptionGroup} from "../../entities/SelectableOptionGroup";
 
 
-
-
-class MongoDBEntityID implements DBEntityID
+export class MongoDBEntityID implements DBEntityID
 {
-    public readonly id: mongoose.ObjectId;
+    public readonly id: mongoose.Types.ObjectId;
 
-    constructor(id: mongoose.ObjectId)
+    constructor(id: mongoose.Types.ObjectId)
     {
         this.id = id;
     }
@@ -46,27 +44,36 @@ export class MongoDatabase implements IDatabase
     private UserAdditionalInfoModel;
     private OptionModel;
     private OptionGroupModel;
+
     constructor(connectionString: string)
     {
         this._connection = mongoose.createConnection(connectionString);
-
         this.UserModel = this._connection.model("User", UserSchema);
         this.UserAdditionalInfoModel = this._connection.model("UserInfo", UserAdditionalInfoSchema);
         this.OptionModel = this._connection.model("Option", OptionSchema);
         this.OptionGroupModel = this._connection.model("OptionGroup", OptionGroupSchema)
+    }
 
+
+    get connection(): mongoose.Connection
+    {
+        return this._connection;
     }
 
     ConvertToDBEntityIDFrom<Type>(value: Type): MongoDBEntityID | null
     {
-        if (!(typeof value !== "string"))
+        if ((typeof value !== "string"))
             return null;
 
-        let mongoId: mongoose.ObjectId;
+        let mongoId: Types.ObjectId | null;
+
+
+        if (!Types.ObjectId.isValid(value as string))
+            return null;
 
         try
         {
-            mongoId = new Schema.Types.ObjectId(value as string);
+            mongoId = new Types.ObjectId(value as string);
         }
         catch (e: any)
         {
@@ -78,12 +85,15 @@ export class MongoDatabase implements IDatabase
 
     CheckConnection(): boolean
     {
-        return this._connection.readyState === ConnectionStates.connected;
+        // expression "ConnectionStates.connected" produce "TypeError: Cannot read properties of undefined (reading 'connected')"
+        // return this._connection.readyState === ConnectionStates.connected;
+
+        return this._connection.readyState === 1;
     }
 
     CheckIDsAreEqual(leftID: MongoDBEntityID, rightID: MongoDBEntityID): boolean
     {
-        return (leftID.id.instance == rightID.id.instance);
+        return (leftID.id.toString() == rightID.id.toString());
     }
 
     async AddUser(user: User): Promise<MongoDBEntityID | null>
@@ -191,32 +201,137 @@ export class MongoDatabase implements IDatabase
 
     async AddOption(option: SelectableOption): Promise<DBEntityID | null>
     {
-        return null;
+        let newOption = new this.OptionModel();
+
+        newOption.name = option.name;
+
+        const savedModel = await ResolveOrNull(newOption.save());
+
+        if (savedModel === null)
+            return null;
+
+        return new MongoDBEntityID(savedModel.id);
     }
 
     async AddOptionGroup(group: SelectableOptionGroup): Promise<DBEntityID | null>
     {
-        return null;
+        let optionGroup = new this.OptionGroupModel();
+
+        optionGroup.optionGroupName = group.name;
+
+        const savedModel = await ResolveOrNull(optionGroup.save());
+
+        if (savedModel === null)
+            return null;
+
+        return new MongoDBEntityID(savedModel.id);
     }
 
     async AddUserAdditionalInfo(info: UserAdditionalInfo): Promise<DBEntityID | null>
     {
-        return null;
+        let dbInfo = new this.UserAdditionalInfoModel();
+
+        dbInfo.aboutString = info.aboutString;
+
+        const savedModel = await ResolveOrNull(dbInfo.save());
+
+        if (savedModel === null)
+            return null;
+
+        return new MongoDBEntityID(savedModel.id);
     }
 
-    async BindOptionToOptionGroup(optionID: DBEntityID, optionGroupID: DBEntityID): Promise<boolean>
+    async BindOptionToOptionGroup(optionID: MongoDBEntityID, optionGroupID: MongoDBEntityID): Promise<boolean>
     {
-        return false;
+        let optionToBind = await ResolveOrNull(this.OptionModel.findById(optionID.id).exec());
+
+        if (optionToBind === null)
+            return false;
+
+
+        const optionGroupAmWithAlreadyProvidedOption = await ResolveOrNull(this.OptionGroupModel.count({
+            id: {
+                $eq: optionGroupID.id
+            },
+            options : optionID.id
+        }).exec());
+
+        if (optionGroupAmWithAlreadyProvidedOption === null)
+            return false;
+
+        if (optionGroupAmWithAlreadyProvidedOption !== 0)
+            return false;
+
+        let optionGroupBindTo = await ResolveOrNull(this.OptionGroupModel.findOne({id: {$eq: optionGroupID.id}}).exec());
+
+        if (optionGroupBindTo === null)
+            return false;
+
+        optionGroupBindTo.options.push(optionID.id);
+
+        const updatedDocument = await ResolveOrNull(optionGroupBindTo.save())
+
+        if (updatedDocument === null)
+            return false;
+
+        return true;
     }
 
-    async BindOptionToUser(optionID: DBEntityID, userId: DBEntityID): Promise<boolean>
+    async BindOptionToUser(optionID: MongoDBEntityID, userId: MongoDBEntityID): Promise<boolean>
     {
-        return false;
+        let optionToBind = await ResolveOrNull(this.OptionModel.findById(optionID.id).exec());
+
+        if (optionToBind === null)
+            return false;
+
+        const userAmWithAlreadyProvidedOption = await ResolveOrNull(this.UserModel.count({
+            id: {
+                $eq: userId.id
+            },
+            options : optionID.id
+        }).exec());
+
+        if (userAmWithAlreadyProvidedOption === null)
+            return false;
+
+        if (userAmWithAlreadyProvidedOption !== 0)
+            return false;
+
+        let userBindTo = await ResolveOrNull(this.UserModel.findOne({id: {$eq: userId.id}}).exec());
+
+        if (userBindTo === null)
+            return false;
+
+        userBindTo.options.push(optionID.id);
+
+        const updatedUser = await ResolveOrNull(userBindTo.save())
+
+        if (updatedUser === null)
+            return false;
+
+        return true;
     }
 
-    async BindUserInfoToUser(userId: DBEntityID, userInfoID: DBEntityID): Promise<boolean>
+    async BindUserInfoToUser(userId: MongoDBEntityID, userInfoID: MongoDBEntityID): Promise<boolean>
     {
-        return false;
+        let userBindTo = await ResolveOrNull(this.UserModel.findById(userInfoID.id).exec());
+
+        if (userBindTo === null)
+            return false;
+
+        let infoToBind = await ResolveOrNull(this.UserAdditionalInfoModel.findById(userInfoID.id).exec());
+
+        if (infoToBind === null)
+            return false;
+
+        userBindTo.additionalInfo = userInfoID.id;
+
+        const savedUser = await ResolveOrNull(userBindTo.save());
+
+        if (savedUser === null)
+            return false;
+
+        return true;
     }
 
     async GetAllOptionGroupsIDs(): Promise<DBEntityID[] | null>

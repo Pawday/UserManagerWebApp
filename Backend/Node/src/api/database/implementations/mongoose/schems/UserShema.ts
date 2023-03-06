@@ -31,7 +31,8 @@ const UserSchema = new mongoose.Schema(
     additionalInfo:
     {
         type: Schema.Types.ObjectId
-    }
+    },
+    options: [{type: Schema.Types.ObjectId}]
 });
 
 export default UserSchema;
