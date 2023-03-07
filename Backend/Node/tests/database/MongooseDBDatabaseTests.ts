@@ -49,7 +49,7 @@ import IDatabase from "../../src/api/database/IDatabase";
 
         this.notExistedIdMaker = () =>
         {
-            return new MongoDBEntityID(new mongoose.Types.ObjectId())
+            return new MongoDBEntityID(new mongoose.Types.ObjectId("000000000000000000000000"))
         };
     }
 

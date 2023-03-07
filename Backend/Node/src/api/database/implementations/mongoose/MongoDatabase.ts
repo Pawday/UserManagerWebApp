@@ -262,7 +262,7 @@ export class MongoDatabase implements IDatabase
         if (optionGroupAmWithAlreadyProvidedOption !== 0)
             return false;
 
-        let optionGroupBindTo = await ResolveOrNull(this.OptionGroupModel.findOne({id: {$eq: optionGroupID.id}}).exec());
+        let optionGroupBindTo = await ResolveOrNull(this.OptionGroupModel.findOne({_id: {$eq: optionGroupID.id}}).exec());
 
         if (optionGroupBindTo === null)
             return false;
@@ -297,7 +297,7 @@ export class MongoDatabase implements IDatabase
         if (userAmWithAlreadyProvidedOption !== 0)
             return false;
 
-        let userBindTo = await ResolveOrNull(this.UserModel.findOne({id: {$eq: userId.id}}).exec());
+        let userBindTo = await ResolveOrNull(this.UserModel.findById(userId.id).exec());
 
         if (userBindTo === null)
             return false;
@@ -314,7 +314,7 @@ export class MongoDatabase implements IDatabase
 
     async BindUserInfoToUser(userId: MongoDBEntityID, userInfoID: MongoDBEntityID): Promise<boolean>
     {
-        let userBindTo = await ResolveOrNull(this.UserModel.findById(userInfoID.id).exec());
+        let userBindTo = await ResolveOrNull(this.UserModel.findById(userId.id).exec());
 
         if (userBindTo === null)
             return false;
@@ -336,57 +336,157 @@ export class MongoDatabase implements IDatabase
 
     async GetAllOptionGroupsIDs(): Promise<DBEntityID[] | null>
     {
-        return null
+        const opGroupIds = await ResolveOrNull(this.OptionGroupModel.find({},{_id: true}).exec());
+
+        if (opGroupIds === null)
+            return null;
+
+        if (opGroupIds.length === 0)
+            return null;
+
+        let entitiesIds = opGroupIds.map((opGroup) =>
+        {
+            return new MongoDBEntityID(opGroup.id);
+        });
+
+        return entitiesIds;
     }
 
     async GetAllOptionsIDs(): Promise<DBEntityID[] | null>
     {
-        return null;
+        const optionIds = await ResolveOrNull(this.OptionModel.find({},{_id: true}).exec());
+
+        if (optionIds === null)
+            return null;
+
+        if (optionIds.length === 0)
+            return null;
+
+        let entitiesIds = optionIds.map((optionID) =>
+        {
+            return new MongoDBEntityID(optionID.id);
+        });
+
+        return entitiesIds;
     }
 
-    async GetOptionById(optionId: DBEntityID): Promise<SelectableOption | null>
+    async GetOptionById(optionId: MongoDBEntityID): Promise<SelectableOption | null>
     {
-        return null;
+        const optionToReturn = await ResolveOrNull(this.OptionModel.findById(optionId.id).exec());
+
+        if (optionToReturn === null)
+            return null;
+
+        return new SelectableOption(optionToReturn.name);
     }
 
-    async GetOptionGroupByID(groupID: DBEntityID): Promise<SelectableOptionGroup | null>
+    async GetOptionGroupByID(groupID: MongoDBEntityID): Promise<SelectableOptionGroup | null>
     {
-        return null;
+        const optionGroup = await ResolveOrNull(this.OptionGroupModel.findById(groupID.id, {optionGroupName: true}).exec());
+
+        if (optionGroup === null)
+            return null;
+
+        return new SelectableOptionGroup(optionGroup.optionGroupName);
     }
 
-    async GetOptionsByIDs(optionIDs: DBEntityID[]): Promise<SelectableOption[] | null>
+    async GetOptionsByIDs(optionIDs: MongoDBEntityID[]): Promise<SelectableOption[] | null>
     {
-        return null;
+        const optionIdsAsMongoIds = optionIDs.map((optionId) => optionId.id);
+
+        const optionAm = await ResolveOrNull(this.OptionModel.count({_id :
+                {
+                    $in: optionIdsAsMongoIds
+                }}).exec());
+
+        if (optionAm === null)
+            return null;
+
+        if (optionAm !== optionIDs.length)
+            return null;
+
+        let options = await ResolveOrNull(this.OptionModel.find({_id :
+                {
+                    $in: optionIdsAsMongoIds
+                }}).exec())
+
+        if (options === null)
+            return null;
+
+        if (options.length === 0)
+            return null;
+
+        return options.map(option => new SelectableOption(option.name));
     }
 
-    async GetOptionsIDsByGroupID(optionGroupID: DBEntityID): Promise<DBEntityID[] | null>
+    async GetOptionsIDsByGroupID(optionGroupID: MongoDBEntityID): Promise<DBEntityID[] | null>
     {
-        return null;
+        const optionGroup = await ResolveOrNull(this.OptionGroupModel.findById(optionGroupID.id, {options: true}).exec());
+
+        if (optionGroup === null)
+            return null;
+
+        return optionGroup.options.map(optionId => new MongoDBEntityID(optionId));
     }
 
-    async GetUserAdditionalInfoById(infoID: DBEntityID): Promise<UserAdditionalInfo | null>
+    async GetUserAdditionalInfoById(infoID: MongoDBEntityID): Promise<UserAdditionalInfo | null>
     {
-        return null;
+        const userInfo = await ResolveOrNull(this.UserAdditionalInfoModel.findById(infoID.id).exec());
+
+        if (userInfo === null)
+            return null;
+
+        return new UserAdditionalInfo(userInfo.aboutString);
     }
 
-    async GetUserInfoByUserId(userId: DBEntityID): Promise<UserAdditionalInfo | null>
+    async GetUserInfoByUserId(userId: MongoDBEntityID): Promise<UserAdditionalInfo | null>
     {
-        return null
+        const user = await ResolveOrNull(this.UserModel.findById(userId.id, {additionalInfo: true}).exec());
+
+        if (user === null)
+            return null;
+
+        if (user.additionalInfo === null || user.additionalInfo === undefined)
+            return null;
+
+        return this.GetUserAdditionalInfoById(new MongoDBEntityID(user.additionalInfo));
     }
 
-    async GetUserInfoIdByUserId(userId: DBEntityID): Promise<DBEntityID | null>
+    async GetUserInfoIdByUserId(userId: MongoDBEntityID): Promise<DBEntityID | null>
     {
-        return null;
+        const user = await ResolveOrNull(this.UserModel.findById(userId.id, {additionalInfo: true}).exec());
+
+        if (user === null || user === undefined)
+            return null;
+
+        const infoID = user.additionalInfo;
+
+        if (infoID === undefined)
+            return null;
+
+        return new MongoDBEntityID(infoID);
     }
 
-    async GetUserOptionsIDsByUserId(userID: DBEntityID): Promise<DBEntityID[] | null>
+    async GetUserOptionsIDsByUserId(userID: MongoDBEntityID): Promise<DBEntityID[] | null>
     {
-        return null;
+        const user = await ResolveOrNull(this.UserModel.findById(userID.id, {options: true}).exec());
+
+        if (user === null || user === undefined)
+            return null;
+
+        const userOptionsIds = user.options;
+
+        return userOptionsIds.map(internalId => new MongoDBEntityID(internalId));
     }
 
-    async IsOptionExistById(optionId: DBEntityID): Promise<boolean>
+    async IsOptionExistById(optionId: MongoDBEntityID): Promise<boolean>
     {
-        return false;
+        const option = await ResolveOrNull(this.OptionModel.findById(optionId.id, {}).exec());
+
+        if (option === null)
+            return false;
+
+        return true;
     }
 
 }

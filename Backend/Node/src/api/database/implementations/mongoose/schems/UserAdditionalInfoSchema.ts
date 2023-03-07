@@ -2,7 +2,11 @@ import {Schema} from "mongoose";
 
 const UserAdditionalInfoSchema = new Schema(
 {
-    aboutString: String,
+    aboutString:
+    {
+        type: String,
+        required: true
+    }
 });
 
 export default UserAdditionalInfoSchema;

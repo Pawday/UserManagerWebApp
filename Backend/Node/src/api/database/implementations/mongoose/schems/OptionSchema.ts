@@ -3,7 +3,11 @@ import mongoose from "mongoose";
 
 export const OptionSchema = new mongoose.Schema(
 {
-    name: String
+    name:
+    {
+        type: String,
+        required: true
+    }
 });
 
 

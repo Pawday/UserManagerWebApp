@@ -3,7 +3,11 @@ import mongoose, {Schema} from "mongoose";
 
 export const OptionGroupSchema = new mongoose.Schema(
 {
-    optionGroupName: String,
+    optionGroupName:
+    {
+        type: String,
+        required: true
+    },
     options: [{type: Schema.Types.ObjectId}]
 });
 
