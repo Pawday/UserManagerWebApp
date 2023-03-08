@@ -1,1 +1,4 @@
-export interface DBEntityID {}
+export interface DBEntityID
+{
+    toString() : string;
+}

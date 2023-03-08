@@ -11,14 +11,10 @@ import EditIcon from '@mui/icons-material/Edit';
 import AddIcon from "@mui/icons-material/Add";
 import ManIcon from '@mui/icons-material/Face6Rounded';
 import WomanIcon from '@mui/icons-material/Face3Rounded';
+import usersStore, { UserOverviewDataRow } from "./EditScreenStores";
+import { useStore } from "effector-react";
 
-type UserOverviewDataRow =
-{
-    userID: string,
-    userName: string,
-    userEmail: string,
-    gender: "MAN" | "WOMAN"
-};
+
 
 function UserRow(props: {user: UserOverviewDataRow, bgColor: string}) {
     return <ListItem key={props.user.userID}
@@ -37,7 +33,7 @@ function UserRow(props: {user: UserOverviewDataRow, bgColor: string}) {
                 display: "flex",
                 justifyContent: "space-between",
                 fontSize: "1.3em",
-                allignItems: "center",
+                alignItems: "center",
                 flexBasis: "40%"
             }}>
             <Box>{props.user.userID}</Box>
@@ -61,32 +57,12 @@ function UserRow(props: {user: UserOverviewDataRow, bgColor: string}) {
     </ListItem>
 }
 
-const array = [
-    "a",
-    "a1",
-    "a2",
-    "a3",
-    "a4",
-    "a5",
-    "a6",
-    "a7",
-    "a8",
-    "a9",
-    "a10",
-    "a11",
-    "a12",
-    "a13",
-    "a14",
-    "a15",
-    "a17",
-    "a18",
-    "a19",
-    "a20",
-    "a21"
-]
 
 export default function EditableUsersTable()
 {
+
+    const users = useStore(usersStore)
+
     return <Container disableGutters
     sx={{
         userSelect: "none",
@@ -145,12 +121,12 @@ export default function EditableUsersTable()
                 paddingTop: "45px"
             }}
         >
-            {array.map((str, index)=>{
-                return <UserRow key={str} user={{
-                    userID: str,
-                    userName: str,
-                    userEmail: str,
-                    gender: (index & 1) == 0 ? "MAN" : "WOMAN"
+            {users.map((userData, index)=>{
+                return <UserRow key={userData.userID} user={{
+                    userID: userData.userID,
+                    userName: userData.userName,
+                    userEmail: userData.userEmail,
+                    gender: userData.gender
                 }} bgColor={(index & 1) == 0 ? "#ededed" : "#d9d9d9"}/>
             })}
         </Container>

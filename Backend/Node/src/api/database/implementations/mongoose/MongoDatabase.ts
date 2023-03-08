@@ -20,6 +20,12 @@ export class MongoDBEntityID implements DBEntityID
     {
         this.id = id;
     }
+
+    toString(): string
+    {
+        return this.id.toString();
+    }
+
 }
 
 

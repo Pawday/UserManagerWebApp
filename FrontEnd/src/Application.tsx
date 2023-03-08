@@ -5,6 +5,7 @@ import {createStore} from "effector";
 import {useStore} from "effector-react";
 import {authenticateUserFx} from "./loginScreen/LoginEvents";
 import {EditScreen} from "./editScreen/EditScreen";
+import {RegisterApiEffects} from "./api/ApplicationAPI";
 
 class ApplicationState
 {
@@ -35,6 +36,8 @@ export default function Application()
 
     if (!currenState.HasToken())
         return <LoginScreen />
+
+    RegisterApiEffects();
 
     return <EditScreen />
 

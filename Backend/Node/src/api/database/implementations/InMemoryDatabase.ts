@@ -13,6 +13,13 @@ export class InMemoryDBEntityId implements DBEntityID
     {
         this.id = id;
     }
+
+    toString(): string
+    {
+        return this.id.toString();
+    }
+
+
 }
 
 export class InMemoryDatabase implements IDatabase
