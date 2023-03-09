@@ -67,11 +67,11 @@ async function ApiLoadUserPreviews(ids: Array<string>) : Promise<Array<UserOverv
             gender: number
         }>);
 
-        return users.map((val) =>
+        return users.map((val, index) =>
         {
             const mapped: UserOverviewDataRow =
             {
-                userID: val.id,
+                userID: ids[index],
                 userName: val.name,
                 userEmail: val.email,
                 gender: ((val.gender & 1) ? "WOMAN" : "MAN")

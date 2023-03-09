@@ -6,6 +6,7 @@ import {useStore} from "effector-react";
 import {authenticateUserFx} from "./loginScreen/LoginEvents";
 import {EditScreen} from "./editScreen/EditScreen";
 import {RegisterApiEffects} from "./api/ApplicationAPI";
+import {userPreviewsLoadFx} from "./api/APIEvents";
 
 class ApplicationState
 {
@@ -38,6 +39,7 @@ export default function Application()
         return <LoginScreen />
 
     RegisterApiEffects();
+    userPreviewsLoadFx(null);
 
     return <EditScreen />
 

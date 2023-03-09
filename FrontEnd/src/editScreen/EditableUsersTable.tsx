@@ -11,8 +11,9 @@ import EditIcon from '@mui/icons-material/Edit';
 import AddIcon from "@mui/icons-material/Add";
 import ManIcon from '@mui/icons-material/Face6Rounded';
 import WomanIcon from '@mui/icons-material/Face3Rounded';
-import usersStore, { UserOverviewDataRow } from "./EditScreenStores";
+import {usersStore, UserOverviewDataRow } from "./EditScreenStores";
 import { useStore } from "effector-react";
+import {deleteUserRequestFx} from "./EditScreenEvents";
 
 
 
@@ -34,7 +35,7 @@ function UserRow(props: {user: UserOverviewDataRow, bgColor: string}) {
                 justifyContent: "space-between",
                 fontSize: "1.3em",
                 alignItems: "center",
-                flexBasis: "40%"
+                flexBasis: "80%"
             }}>
             <Box>{props.user.userID}</Box>
             <Box>{props.user.userName}</Box>
@@ -47,12 +48,12 @@ function UserRow(props: {user: UserOverviewDataRow, bgColor: string}) {
         sx={{
             margin: "0",
             display: "flex",
-            flexBasis: "60%",
+            flexBasis: "20%",
             justifyContent: "flex-end"
         }}
         >
             <IconButton><EditIcon/></IconButton>
-            <IconButton color="error"><DeleteIcon/></IconButton>
+            <IconButton onClick={() => deleteUserRequestFx(props.user)} color="error"><DeleteIcon/></IconButton>
         </Container>
     </ListItem>
 }
@@ -61,7 +62,7 @@ function UserRow(props: {user: UserOverviewDataRow, bgColor: string}) {
 export default function EditableUsersTable()
 {
 
-    const users = useStore(usersStore)
+    const users = useStore(usersStore);
 
     return <Container disableGutters
     sx={{
@@ -94,19 +95,14 @@ export default function EditableUsersTable()
                         display: "flex",
                         justifyContent: "space-between",
                         fontSize: "1.3em",
-                        allignItems: "center",
-                        flexBasis: "40%"
+                        flexBasis: "60%"
                     }}>
-                    <Box>ID</Box>
-                    <Box>Имя</Box>
-                    <Box>Email</Box>
-                    <Box>Пол</Box>
                 </Container>
                 <Container disableGutters
                            sx={{
                                margin: "0",
                                display: "flex",
-                               flexBasis: "60%",
+                               flexBasis: "20%",
                                justifyContent: "flex-end"
                            }}>
                     <Button variant="contained" color="success" size="large" startIcon={<AddIcon />}>Добавить</Button>
