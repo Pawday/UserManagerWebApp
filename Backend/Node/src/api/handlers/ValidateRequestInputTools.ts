@@ -4,7 +4,7 @@ import {SendInputNotProvidedError} from "./ResponseUtils";
 import APIDatabase from "../APIDatabase";
 import {DBEntityID} from "../database/entities/DBEntityID";
 
-export async function ValidateUserIDInput(req: Request, resp: Response): Promise<DBEntityID | null>
+export async function ValidateUserIDInputAndSendErrorIfNotValid(req: Request, resp: Response): Promise<DBEntityID | null>
 {
     let apiResp: APIResponse = new APIResponse();
 

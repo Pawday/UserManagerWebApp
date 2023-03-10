@@ -1,10 +1,10 @@
 import { userPreviewsLoadFx } from "../api/APIEvents";
-import {UserOverviewDataRow} from "./EditScreenStores";
+import {UserRestrictedData} from "./EditScreenStores";
 import {createEffect, createEvent, forward} from "effector";
 
-export const updateUsersListEvent = createEvent<Array<UserOverviewDataRow>>("update_users_list_event");
-export const deleteUserRequestEvent = createEvent<UserOverviewDataRow>("update_user_in_any_dialog");
-export const deleteUserRequestFx = createEffect<UserOverviewDataRow,
+export const updateUsersListEvent = createEvent<Array<UserRestrictedData>>("update_users_list_event");
+export const deleteUserRequestEvent = createEvent<UserRestrictedData>("update_user_in_any_dialog");
+export const deleteUserRequestFx = createEffect<UserRestrictedData,
     {
         deletionApproved: boolean
     }>("delete_user_request");

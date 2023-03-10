@@ -2,7 +2,7 @@ import {Request, Response} from "express";
 import {APIResponse} from "../APIResponse";
 import APIDatabase from "../APIDatabase";
 import {CheckDBConnectionAndSendError} from "./ResponseUtils";
-import {ValidateUserIDInput} from "./ValidateRequestInputTools";
+import {ValidateUserIDInputAndSendErrorIfNotValid} from "./ValidateRequestInputTools";
 import {User} from "../database/entities/User";
 
 async function GetSingleUserHandler(req: Request, resp: Response)
@@ -11,7 +11,7 @@ async function GetSingleUserHandler(req: Request, resp: Response)
 
     let apiResp: APIResponse = new APIResponse();
 
-    let userId = ValidateUserIDInput(req, resp);
+    let userId = ValidateUserIDInputAndSendErrorIfNotValid(req, resp);
 
     if (userId === null) return;
 

@@ -1,6 +1,6 @@
 import React from "react"
 
-import {usersStore, UserOverviewDataRow } from "./EditScreenStores";
+import {usersStore, UserRestrictedData } from "./EditScreenStores";
 import { useStore } from "effector-react";
 import {deleteUserRequestEvent} from "./EditScreenEvents";
 
@@ -20,7 +20,7 @@ import WomanIcon from '@mui/icons-material/Face3Rounded';
 
 
 
-function UserRow(props: {user: UserOverviewDataRow, bgColor: string}) {
+function UserRow(props: {user: UserRestrictedData, bgColor: string}) {
     return <ListItem key={props.user.userID}
 
     sx={{

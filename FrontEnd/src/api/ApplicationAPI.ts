@@ -1,6 +1,6 @@
 import {authenticateUserFx} from "../loginScreen/LoginEvents";
-import {userPreviewsLoadFx} from "./APIEvents";
-import {UserOverviewDataRow} from "../editScreen/EditScreenStores";
+import {userDeleteFx, userPreviewsLoadFx} from "./APIEvents";
+import {UserRestrictedData} from "../editScreen/EditScreenStores";
 
 let token: string;
 
@@ -10,6 +10,11 @@ function ApiSetToken(newToken: string)
 {
     token = newToken;
 }
+
+authenticateUserFx.doneData.watch((tokenPayload) =>
+{
+    ApiSetToken(tokenPayload.token);
+});
 
 export async function ApiLoadAllUsersIDS(): Promise<Array<string> | null>
 {
@@ -37,7 +42,7 @@ export async function ApiLoadAllUsersIDS(): Promise<Array<string> | null>
     }
 }
 
-async function ApiLoadUserPreviews(ids: Array<string>) : Promise<Array<UserOverviewDataRow> | null>
+async function ApiLoadUserPreviews(ids: Array<string>) : Promise<Array<UserRestrictedData> | null>
 {
     try
     {
@@ -69,7 +74,7 @@ async function ApiLoadUserPreviews(ids: Array<string>) : Promise<Array<UserOverv
 
         return users.map((val, index) =>
         {
-            const mapped: UserOverviewDataRow =
+            const mapped: UserRestrictedData =
             {
                 userID: ids[index],
                 userName: val.name,
@@ -86,15 +91,46 @@ async function ApiLoadUserPreviews(ids: Array<string>) : Promise<Array<UserOverv
     }
 }
 
-authenticateUserFx.doneData.watch((tokenPayload) =>
+
+async function ApiDeleteUser(userId: string): Promise<boolean>
 {
-    ApiSetToken(tokenPayload.token);
-});
+    try
+    {
+        const payload = JSON.stringify(
+            {
+                token: token,
+                user_id: userId
+            });
+
+        const resp = await fetch(`${API_URI}/user/delete`,
+            {
+                method: "POST",
+                headers:
+                    {
+                        "Content-Type": "application/json"
+                    },
+                body: payload
+            });
+
+        const respObj = await resp.json();
+
+        if (respObj.error)
+            return false;
+
+        return respObj.response;
+
+    }
+    catch (e)
+    {
+        return false;
+    }
+}
+
 
 
 export function RegisterApiEffects()
 {
-    userPreviewsLoadFx.use(async (params) =>
+    userPreviewsLoadFx.use(async () =>
     {
         const ids = await ApiLoadAllUsersIDS();
 
@@ -110,6 +146,11 @@ export function RegisterApiEffects()
             return Promise.reject("Server returns null for users request");
 
         return users;
+    });
+
+    userDeleteFx.use(async (user) =>
+    {
+        return ApiDeleteUser(user.userID);
     });
 }
 

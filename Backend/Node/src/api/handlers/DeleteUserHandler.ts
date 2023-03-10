@@ -2,7 +2,7 @@ import {Request, Response} from "express";
 import {CheckDBConnectionAndSendError} from "./ResponseUtils";
 import {APIResponse} from "../APIResponse";
 import APIDatabase from "../APIDatabase";
-import {ValidateUserIDInput} from "./ValidateRequestInputTools";
+import {ValidateUserIDInputAndSendErrorIfNotValid} from "./ValidateRequestInputTools";
 
 export default async function DeleteUserHandler(req: Request, resp: Response)
 {
@@ -10,7 +10,7 @@ export default async function DeleteUserHandler(req: Request, resp: Response)
 
     let apiResp: APIResponse = new APIResponse();
 
-    let userId = ValidateUserIDInput(req, resp);
+    let userId = await ValidateUserIDInputAndSendErrorIfNotValid(req, resp);
 
     if (userId === null) return;
 

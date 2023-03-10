@@ -1,7 +1,7 @@
 import {createStore, forward} from "effector";
 import {deleteUserRequestFx, updateUsersListEvent, deleteUserRequestEvent} from "./EditScreenEvents";
 
-export type UserOverviewDataRow =
+export type UserRestrictedData =
 {
     userID: string,
     userName: string,
@@ -17,9 +17,9 @@ export enum EditScreenState
     APPEND_USER
 }
 
-export const usersStore = createStore<Array<UserOverviewDataRow>>([]);
+export const usersStore = createStore<Array<UserRestrictedData>>([]);
 export const editScreenStateStore = createStore<EditScreenState>(EditScreenState.EDIT_USER);
-export const userInDialogStore = createStore<UserOverviewDataRow | null>(null);
+export const userInDialogStore = createStore<UserRestrictedData | null>(null);
 
 userInDialogStore.on(deleteUserRequestEvent, (oldUser, newUser) =>
 {
