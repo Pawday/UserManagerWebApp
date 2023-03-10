@@ -1,5 +1,5 @@
-import {createStore} from "effector";
-import {deleteUserRequestFx, updateUsersListEvent} from "./EditScreenEvents";
+import {createStore, forward} from "effector";
+import {deleteUserRequestFx, updateUsersListEvent, deleteUserRequestEvent} from "./EditScreenEvents";
 
 export type UserOverviewDataRow =
 {
@@ -18,17 +18,25 @@ export enum EditScreenState
 }
 
 export const usersStore = createStore<Array<UserOverviewDataRow>>([]);
-export const editScreenStateStore = createStore<EditScreenState>(EditScreenState.TABLE_VIEW);
-export const userToDeleteOnDeleteRequest = createStore<UserOverviewDataRow | null>(null);
+export const editScreenStateStore = createStore<EditScreenState>(EditScreenState.EDIT_USER);
+export const userInDialogStore = createStore<UserOverviewDataRow | null>(null);
 
+userInDialogStore.on(deleteUserRequestEvent, (oldUser, newUser) =>
+{
+    return {...newUser};
+});
 
-
-editScreenStateStore.on(deleteUserRequestFx, (state,user) =>
+editScreenStateStore.on(deleteUserRequestEvent, () =>
 {
     return EditScreenState.DELETE_USER;
 });
 
+forward({
+    from: deleteUserRequestEvent,
+    to: deleteUserRequestFx
+});
+
 usersStore.on(updateUsersListEvent, (oldUsers, loadedUsers) =>
 {
-    return loadedUsers;
+    return [...loadedUsers];
 });

@@ -1,4 +1,9 @@
 import React from "react"
+
+import {usersStore, UserOverviewDataRow } from "./EditScreenStores";
+import { useStore } from "effector-react";
+import {deleteUserRequestEvent} from "./EditScreenEvents";
+
 import {
     Container,
     ListItem,
@@ -11,9 +16,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import AddIcon from "@mui/icons-material/Add";
 import ManIcon from '@mui/icons-material/Face6Rounded';
 import WomanIcon from '@mui/icons-material/Face3Rounded';
-import {usersStore, UserOverviewDataRow } from "./EditScreenStores";
-import { useStore } from "effector-react";
-import {deleteUserRequestFx} from "./EditScreenEvents";
+
 
 
 
@@ -53,7 +56,7 @@ function UserRow(props: {user: UserOverviewDataRow, bgColor: string}) {
         }}
         >
             <IconButton><EditIcon/></IconButton>
-            <IconButton onClick={() => deleteUserRequestFx(props.user)} color="error"><DeleteIcon/></IconButton>
+            <IconButton onClick={() => deleteUserRequestEvent(props.user)} color="error"><DeleteIcon/></IconButton>
         </Container>
     </ListItem>
 }
@@ -63,6 +66,9 @@ export default function EditableUsersTable()
 {
 
     const users = useStore(usersStore);
+
+    if (users === null)
+        return null;
 
     return <Container disableGutters
     sx={{

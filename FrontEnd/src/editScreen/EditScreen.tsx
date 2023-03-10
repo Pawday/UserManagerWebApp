@@ -15,8 +15,7 @@ export function EditScreen()
 
     if (editScreenState === EditScreenState.DELETE_USER)
     {
-
-        dialog = <DeleteUserDialog userID={"asd"} userName={"asd"} userEmail={"Asd"} gender={"MAN"}/>
+        dialog = <DeleteUserDialog/>
     }
 
     return <Container

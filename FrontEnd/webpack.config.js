@@ -1,6 +1,5 @@
 const path  = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
-const HtmlWebpackLoader = require("source-map-loader");
 
 const PACK_DIRECTORY = path.resolve(__dirname, "__pack__");
 const TS_BUILD_DIRECTORY = path.resolve(__dirname, "_ts_build");
@@ -28,18 +27,22 @@ const configDebug =
     module:
     {
         rules:
-            [
-                {
-                    test: /\.js$/,
-                    enforce: "pre",
-                    use: ts_sourcemap
-                }
-            ]
+        [
+            {
+                test: /\.js$/,
+                enforce: "pre",
+                use: ts_sourcemap
+            }
+        ]
+    },
+    devServer:
+    {
+        static: {
+            directory: path.join(__dirname, '__pack__'),
+        },
+        compress: false,
+        port: 8000,
     }
-}
-
-{
-
 }
 
 module.exports = [configDebug];
