@@ -70,10 +70,20 @@ export class GeneralDatabaseTester
 
         let randomId = this.notExistedIdMaker();
 
-        assert(null === await db.GetAllOptionsIDs());
-        assert(null === await db.GetAllOptionGroupsIDs());
+        const allOptions = await db.GetAllOptionsIDs();
 
-        assert(null === await db.GetOptionsByIDs([randomId]));
+        assert(null !== allOptions);
+        assert(0 === allOptions.length);
+
+        const allGroups = await db.GetAllOptionGroupsIDs();
+
+        assert(null !== allGroups);
+        assert(0 === allGroups.length);
+
+        const notFoundedOptions = await db.GetOptionsByIDs([randomId]);
+        assert(null !== notFoundedOptions);
+        assert(0 === notFoundedOptions.length);
+
         assert(null === await db.GetUsersByIds([randomId]));
 
         assert(false === await db.BindUserInfoToUser(randomId, randomId));
@@ -169,9 +179,10 @@ export class GeneralDatabaseTester
 
         let fakeID = this.notExistedIdMaker();
 
-        let nullOptionBecauseMissOneID = await db.GetOptionsByIDs([option1ID, fakeID]);
+        let emptyOptionsArrayBecauseMissOneID = await db.GetOptionsByIDs([option1ID, fakeID]);
 
-        assert(null === nullOptionBecauseMissOneID);
+        assert(null !== emptyOptionsArrayBecauseMissOneID);
+        assert(0 === emptyOptionsArrayBecauseMissOneID.length);
 
     }
 

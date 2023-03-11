@@ -348,7 +348,7 @@ export class MongoDatabase implements IDatabase
             return null;
 
         if (opGroupIds.length === 0)
-            return null;
+            return [];
 
         let entitiesIds = opGroupIds.map((opGroup) =>
         {
@@ -366,7 +366,7 @@ export class MongoDatabase implements IDatabase
             return null;
 
         if (optionIds.length === 0)
-            return null;
+            return [];
 
         let entitiesIds = optionIds.map((optionID) =>
         {
@@ -409,7 +409,7 @@ export class MongoDatabase implements IDatabase
             return null;
 
         if (optionAm !== optionIDs.length)
-            return null;
+            return [];
 
         let options = await ResolveOrNull(this.OptionModel.find({_id :
                 {
@@ -420,7 +420,7 @@ export class MongoDatabase implements IDatabase
             return null;
 
         if (options.length === 0)
-            return null;
+            return [];
 
         return options.map(option => new SelectableOption(option.name));
     }

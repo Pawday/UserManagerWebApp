@@ -37,7 +37,7 @@ interface IDatabase
     GetOptionById(optionId: DBEntityID): Promise<SelectableOption | null>;
     IsOptionExistById(optionId: DBEntityID): Promise<boolean>;
 
-    // Returns null if at least one id not found
+    // Returns [] if at least one id not found
     GetOptionsByIDs(optionIDs: DBEntityID[]): Promise<SelectableOption[] | null>;
 
 

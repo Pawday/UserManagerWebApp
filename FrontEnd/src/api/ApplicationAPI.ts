@@ -1,6 +1,7 @@
 import {authenticateUserFx} from "../loginScreen/LoginEvents";
-import {userDeleteFx, userPreviewsLoadFx} from "./APIEvents";
+import {optionsLoadFx, userDeleteFx, userPreviewsLoadFx} from "./APIEffects";
 import {UserRestrictedData} from "../editScreen/EditScreenStores";
+import {OptionGroupWithOptions} from "./ApiTypes";
 
 let token: string;
 
@@ -126,6 +127,34 @@ async function ApiDeleteUser(userId: string): Promise<boolean>
     }
 }
 
+async function ApiLoadOptionGroups() : Promise<OptionGroupWithOptions[] | null>
+{
+    try
+    {
+        const payload = JSON.stringify({token: token});
+
+        const resp = await fetch(`${API_URI}/options/fullTree`,
+            {
+                method: "POST",
+                headers:
+                    {
+                        "Content-Type": "application/json"
+                    },
+                body: payload
+            });
+
+        const respObj = await resp.json();
+
+        if (respObj.error)
+            return null;
+
+        return respObj.response;
+    }
+    catch (e: any)
+    {
+        return null;
+    }
+}
 
 
 export function RegisterApiEffects()
@@ -152,6 +181,12 @@ export function RegisterApiEffects()
     {
         return ApiDeleteUser(user.userID);
     });
+
+    optionsLoadFx.use(async () =>
+    {
+        return ApiLoadOptionGroups();
+    });
+
 }
 
 

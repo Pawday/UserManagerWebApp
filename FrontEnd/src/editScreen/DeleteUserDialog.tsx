@@ -4,8 +4,8 @@ import {EditScreenState, editScreenStateStore, userInDialogStore, UserRestricted
 
 import {Box, Button, Typography} from "@mui/material";
 import {useStore} from "effector-react";
-import {createEvent, createStore, forward, guard, sample} from "effector";
-import {userDeleteFx, userPreviewsLoadFx} from "../api/APIEvents";
+import {createEvent, createStore, forward, sample} from "effector";
+import {userDeleteFx, userPreviewsLoadFx} from "../api/APIEffects";
 
 
 const deleteDialogErrorMessageStore = createStore<string | null>(null);

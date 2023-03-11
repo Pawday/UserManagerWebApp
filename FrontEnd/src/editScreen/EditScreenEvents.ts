@@ -1,4 +1,4 @@
-import { userPreviewsLoadFx } from "../api/APIEvents";
+import { userPreviewsLoadFx } from "../api/APIEffects";
 import {EditScreenState, UserRestrictedData} from "./EditScreenStores";
 import {createEvent, forward} from "effector";
 

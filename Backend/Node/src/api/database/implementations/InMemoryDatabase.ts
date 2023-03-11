@@ -261,7 +261,7 @@ export class InMemoryDatabase implements IDatabase
     async GetAllOptionsIDs(): Promise<InMemoryDBEntityId[] | null>
     {
         if (this._options.length == 0)
-            return null;
+            return [];
         return this._options.map((_, index) => new InMemoryDBEntityId(index));
     }
 
@@ -318,7 +318,7 @@ export class InMemoryDatabase implements IDatabase
     async GetAllOptionGroupsIDs(): Promise<DBEntityID[] | null>
     {
         if (this._optionGroups.length == 0)
-            return null;
+            return [];
         return this._optionGroups.map((_, index) => {return new InMemoryDBEntityId(index)});
     }
 
