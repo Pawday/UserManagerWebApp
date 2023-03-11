@@ -4,6 +4,7 @@ import EditableUsersTable from "./EditableUsersTable";
 import {EditScreenState, editScreenStateStore} from "./EditScreenStores";
 import {useStore} from "effector-react";
 import {DeleteUserDialog} from "./DeleteUserDialog";
+import {AppendUserDialog} from "./AppendUserDialog";
 
 
 export function EditScreen()
@@ -14,9 +15,10 @@ export function EditScreen()
     let dialog: JSX.Element | null = null;
 
     if (editScreenState === EditScreenState.DELETE_USER)
-    {
         dialog = <DeleteUserDialog/>
-    }
+
+    if (editScreenState === EditScreenState.APPEND_USER)
+        dialog = <AppendUserDialog/>
 
     return <Container
         disableGutters={true}

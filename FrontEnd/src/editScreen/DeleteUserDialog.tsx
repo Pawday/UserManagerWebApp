@@ -4,7 +4,7 @@ import {EditScreenState, editScreenStateStore, userInDialogStore, UserRestricted
 
 import {Box, Button, Typography} from "@mui/material";
 import {useStore} from "effector-react";
-import {createEvent, createStore, forward, sample} from "effector";
+import {createEvent, createStore, forward, guard, sample} from "effector";
 import {userDeleteFx, userPreviewsLoadFx} from "../api/APIEvents";
 
 
@@ -31,7 +31,7 @@ deleteDialogFormAvailable.on(submitUserDeletion, () => false);
 deleteDialogFormAvailable.on(userDeleteFx.doneData, () => true);
 deleteDialogFormAvailable.on(userDeleteFx.failData, () => true);
 
-editScreenStateStore.on([exitUserDeletionDialog], () =>
+editScreenStateStore.on(exitUserDeletionDialog, () =>
 {
     return EditScreenState.TABLE_VIEW;
 });
@@ -48,11 +48,17 @@ deleteDialogErrorMessageStore.on(userDeleteFx.doneData, (state, serverResp) =>
 
     exitUserDeletionDialog();
 
-    userPreviewsLoadFx(null);
+
     return null;
 });
 
 
+sample({
+    source: userDeleteFx.doneData,
+    filter: userDeleteFx.doneData.map(deleteStatus => deleteStatus),
+    fn: () => null,
+    target: userPreviewsLoadFx
+});
 
 export function DeleteUserDialog()
 {

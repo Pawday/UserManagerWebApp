@@ -1,23 +1,16 @@
 import React from "react"
 
-import {usersStore, UserRestrictedData } from "./EditScreenStores";
-import { useStore } from "effector-react";
-import {deleteUserRequestEvent} from "./EditScreenEvents";
+import {EditScreenState, UserRestrictedData, usersStore} from "./EditScreenStores";
+import {useStore} from "effector-react";
+import {updateScreenStateEvent, updateUserInAnyDialog} from "./EditScreenEvents";
 
-import {
-    Container,
-    ListItem,
-    IconButton,
-    Box, Button
-} from "@mui/material"
+import {Box, Button, Container, IconButton, ListItem} from "@mui/material"
 
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import AddIcon from "@mui/icons-material/Add";
 import ManIcon from '@mui/icons-material/Face6Rounded';
 import WomanIcon from '@mui/icons-material/Face3Rounded';
-
-
 
 
 function UserRow(props: {user: UserRestrictedData, bgColor: string}) {
@@ -55,8 +48,8 @@ function UserRow(props: {user: UserRestrictedData, bgColor: string}) {
             justifyContent: "flex-end"
         }}
         >
-            <IconButton><EditIcon/></IconButton>
-            <IconButton onClick={() => deleteUserRequestEvent(props.user)} color="error"><DeleteIcon/></IconButton>
+            <IconButton onClick={() => {updateUserInAnyDialog(props.user); updateScreenStateEvent(EditScreenState.EDIT_USER)}}><EditIcon/></IconButton>
+            <IconButton onClick={() => {updateUserInAnyDialog(props.user); updateScreenStateEvent(EditScreenState.DELETE_USER)}} color="error"><DeleteIcon/></IconButton>
         </Container>
     </ListItem>
 }
@@ -111,7 +104,7 @@ export default function EditableUsersTable()
                                flexBasis: "20%",
                                justifyContent: "flex-end"
                            }}>
-                    <Button variant="contained" color="success" size="large" startIcon={<AddIcon />}>Добавить</Button>
+                    <Button onClick={() => {updateScreenStateEvent(EditScreenState.APPEND_USER)}} variant="contained" color="success" size="large" startIcon={<AddIcon />}>Добавить</Button>
                 </Container>
             </Container>
 

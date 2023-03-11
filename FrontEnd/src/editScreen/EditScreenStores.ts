@@ -1,5 +1,10 @@
 import {createStore, forward} from "effector";
-import {deleteUserRequestFx, updateUsersListEvent, deleteUserRequestEvent} from "./EditScreenEvents";
+import
+{
+    updateUsersListEvent,
+    updateUserInAnyDialog,
+    updateScreenStateEvent
+} from "./EditScreenEvents";
 
 export type UserRestrictedData =
 {
@@ -17,23 +22,27 @@ export enum EditScreenState
     APPEND_USER
 }
 
+export const editScreenStateStore = createStore<EditScreenState>(EditScreenState.APPEND_USER);
+
+
+
 export const usersStore = createStore<Array<UserRestrictedData>>([]);
-export const editScreenStateStore = createStore<EditScreenState>(EditScreenState.EDIT_USER);
 export const userInDialogStore = createStore<UserRestrictedData | null>(null);
 
-userInDialogStore.on(deleteUserRequestEvent, (oldUser, newUser) =>
+userInDialogStore.on(updateUserInAnyDialog, (oldUser, newUser) =>
 {
     return {...newUser};
 });
 
-editScreenStateStore.on(deleteUserRequestEvent, () =>
+editScreenStateStore.on(updateScreenStateEvent, (oldState,newState) =>
 {
-    return EditScreenState.DELETE_USER;
-});
+    if (oldState === EditScreenState.TABLE_VIEW)
+        return newState;
 
-forward({
-    from: deleteUserRequestEvent,
-    to: deleteUserRequestFx
+    if (newState === EditScreenState.TABLE_VIEW)
+        return EditScreenState.TABLE_VIEW;
+
+    console.error("EditScreenState somehow requested dialog state being in another dialog state");
 });
 
 usersStore.on(updateUsersListEvent, (oldUsers, loadedUsers) =>
