@@ -7,12 +7,11 @@ import {useStore} from "effector-react";
 import {updateScreenStateEvent} from "./EditScreenEvents";
 import {EditScreenState} from "./EditScreenStores";
 
-import ManIcon from '@mui/icons-material/Face6Rounded';
-import WomanIcon from '@mui/icons-material/Face3Rounded';
 import {UserWithFullInfo, Option, OptionGroupWithOptions} from "../api/ApiTypes";
 
 import {addUserWithFullInfoFx, optionsLoadFx, userPreviewsLoadFx} from "../api/APIEffects";
 import {OptionGroupsDisplay} from "./OptionGroupsDisplay";
+import {UserBaseInfoEditableDisplay} from "./UserBaseInfoEditableDisplay";
 
 
 const saveUserEvent = createEvent<UserWithFullInfo>("save_user");
@@ -61,7 +60,8 @@ const allOptionGroupsStore = createStore<Array<OptionGroupWithOptions> | null>(n
 
 const updateAboutString = createEvent<string>("update_about_string")
 const userAboutStringStore = createStore<string | null>(null)
-    .on(updateAboutString, (old, payload) => {return payload});
+    .on(updateAboutString, (old, payload) => {return payload})
+    .on(clearStores, () => {return null});
 
 const requestAllOptionGroupsFromServer = createEvent("request_all_options");
 
@@ -180,7 +180,6 @@ export function AppendUserDialog()
         }}>
 
         <Box
-            onClick={(e) => {e.stopPropagation()}}
             sx={{
                 width: "80%",
                 height: "90%",
@@ -193,44 +192,48 @@ export function AppendUserDialog()
                 justifyContent: "space-around"
             }}>
             {formMessage}
-            <Stack sx={{
-                overflowY: "scroll"
-            }} height={"70%"} width={"90%"} spacing={1}>
-                <Typography fontStyle={"oblique"}>Основная информация</Typography>
-                <TextField sx={{userSelect: "none"}} disabled={true} variant="standard" label="ID" value={"ID не создан: пользователя нет в базе"}></TextField>
-                <TextField disabled={isFormPending} onChange={e => {
-                    updateUserNameEvent(e.target.value)
-                }} variant="standard" label="Имя"></TextField>
-                <TextField disabled={isFormPending} onChange={e => { if (!isFormPending) updateUserEmailEvent(e.target.value)} } variant="standard" label="Почта"></TextField>
-                <TextField disabled={isFormPending} onChange={e => { if(!isFormPending) updateUserPhoneEvent(e.target.value)} } variant="standard" label="Телефон"></TextField>
-                <Typography>Пол</Typography>
-                <Box>
-                    <ManIcon onClick={() =>
-                    {
-                        if (!isFormPending)
-                            radioGenderSelectManEvent();
-                    }} fontSize="large" color={radioGender === "MAN" ? "primary" : "disabled"}/>
-                    <WomanIcon onClick={() => {
-                        if (!isFormPending)
-                            radioGenderSelectWomanEvent();
-                    }} fontSize="large" color={radioGender === "WOMAN" ? "primary" : "disabled"}/>
-                </Box>
-                <Typography fontStyle={"italic"}>Дополнительная информация</Typography>
-
-                <TextField onChange={(e) => updateAboutString(e.target.value)} disabled={isFormPending} multiline variant="outlined" label="О себе"></TextField>
-                {
-                    allOptionsGroups === null
-                        ? <Button onClick={() => requestAllOptionGroupsFromServer()} disabled={isFormPending} variant={"outlined"}>Загрузить все опции</Button>
-                        : <OptionGroupsDisplay
-                            optionGroups={allOptionsGroups}
-                            callbacks={{
-                                callbackOptionSelect: (selectedOption) => {optionSelectEvent(selectedOption)},
-                                callbackOptionDeselect: (deselectedOption) => {optionUnselectEvent(deselectedOption)}
+            <Box sx={{
+                overflowY: "scroll",
+                height: "70%",
+                width: "90%"
+                }}>
+                <UserBaseInfoEditableDisplay
+                    data={{
+                        userID: "Пользователь не добавлен",
+                        blockDisplay: isFormPending,
+                        userName: userName || "",
+                        userEmail: userEmail || "",
+                        userPhone: userPhone || "",
+                        userGender: radioGender
+                    }}
+                    eventHandlers={{
+                        changeNameHandler: updateUserNameEvent,
+                        changePhoneHandler: updateUserPhoneEvent,
+                        changeEmailHandler: updateUserEmailEvent,
+                        changeGenderHandler: newGender => {
+                            switch (newGender)
+                            {
+                                case "MAN": radioGenderSelectManEvent(); break;
+                                case "WOMAN": radioGenderSelectWomanEvent(); break;
                             }}
-                        />
-                }
-
-            </Stack>
+                    }}
+                />
+                <Stack spacing={1}>
+                    <Typography fontStyle={"italic"}>Дополнительная информация</Typography>
+                    <TextField value={aboutString} onChange={(e) => updateAboutString(e.target.value)} disabled={isFormPending} multiline variant="outlined" label="О себе"></TextField>
+                    {
+                        allOptionsGroups === null
+                            ? <Button onClick={() => requestAllOptionGroupsFromServer()} disabled={isFormPending} variant={"outlined"}>Загрузить все опции</Button>
+                            : <OptionGroupsDisplay
+                                optionGroups={allOptionsGroups}
+                                callbacks={{
+                                    callbackOptionSelect: (selectedOption) => {optionSelectEvent(selectedOption)},
+                                    callbackOptionDeselect: (deselectedOption) => {optionUnselectEvent(deselectedOption)}
+                                }}
+                            />
+                    }
+                </Stack>
+            </Box>
             <Box
                 sx={{
                     display: "flex",

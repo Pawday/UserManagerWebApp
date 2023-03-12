@@ -4,6 +4,7 @@ import {DBEntityID} from "../../database/entities/DBEntityID";
 import APIDatabase from "../../APIDatabase";
 import {UserAdditionalInfo} from "../../database/entities/UserAdditionalInfo";
 import {User, UserGender} from "../../database/entities/User";
+import {CheckDBConnectionAndSendError} from "../ResponseUtils";
 
 type Option =
 {
@@ -46,6 +47,8 @@ type UserWithFullInfo =
 */
 export async function AddUserWithFullInfoHandler(req: Request, resp: Response)
 {
+    if(!CheckDBConnectionAndSendError(resp)) return;
+
     const apiResp = new APIResponse();
 
     let userWithInfoInput: UserWithFullInfo;

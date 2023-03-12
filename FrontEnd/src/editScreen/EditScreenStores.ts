@@ -10,7 +10,7 @@ export enum EditScreenState
     APPEND_USER
 }
 
-export const editScreenStateStore = createStore<EditScreenState>(EditScreenState.APPEND_USER);
+export const editScreenStateStore = createStore<EditScreenState>(EditScreenState.TABLE_VIEW);
 
 
 
