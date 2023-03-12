@@ -34,10 +34,10 @@ function UserRow(props: {user: UserRequiredData, bgColor: string}) {
                 alignItems: "center",
                 flexBasis: "80%"
             }}>
-            <Box>{props.user.userID}</Box>
-            <Box>{props.user.userName}</Box>
-            <Box>{props.user.userEmail}</Box>
-            <Box>{(props.user.gender === "MAN") ?
+            <Box width={"25%"} sx={{fontSize: "0.5em"}}>{props.user.userID}</Box>
+            <Box width={"25%"}>{props.user.userName}</Box>
+            <Box width={"25%"}>{props.user.userEmail}</Box>
+            <Box width={"25%"}>{(props.user.gender === "MAN") ?
                 <ManIcon/> : <WomanIcon/>}</Box>
         </Container>
 
@@ -95,8 +95,12 @@ export default function EditableUsersTable()
                         display: "flex",
                         justifyContent: "space-between",
                         fontSize: "1.3em",
-                        flexBasis: "60%"
+                        flexBasis: "80%"
                     }}>
+                    <Box width={"25%"}>ID</Box>
+                    <Box width={"25%"}>Имя</Box>
+                    <Box width={"25%"}>Почта</Box>
+                    <Box width={"25%"}>Пол</Box>
                 </Container>
                 <Container disableGutters
                            sx={{
