@@ -1,6 +1,6 @@
 import React from "react"
 
-import {EditScreenState, UserRestrictedData, usersStore} from "./EditScreenStores";
+import {EditScreenState, usersStore} from "./EditScreenStores";
 import {useStore} from "effector-react";
 import {updateScreenStateEvent, updateUserInAnyDialog} from "./EditScreenEvents";
 
@@ -9,11 +9,12 @@ import {Box, Button, Container, IconButton, ListItem} from "@mui/material"
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import AddIcon from "@mui/icons-material/Add";
-import ManIcon from '@mui/icons-material/Face6Rounded';
-import WomanIcon from '@mui/icons-material/Face3Rounded';
+import WomanIcon from '@mui/icons-material/Face6Rounded';
+import ManIcon from '@mui/icons-material/Face3Rounded';
+import {UserRequiredData} from "../api/ApiTypes";
 
 
-function UserRow(props: {user: UserRestrictedData, bgColor: string}) {
+function UserRow(props: {user: UserRequiredData, bgColor: string}) {
     return <ListItem key={props.user.userID}
 
     sx={{
@@ -65,7 +66,7 @@ export default function EditableUsersTable()
 
     return <Container disableGutters
     sx={{
-        userSelect: "none",
+        userSelect: "none"
     }}
     >
 
@@ -76,7 +77,7 @@ export default function EditableUsersTable()
                   top: "0",
                   zIndex: "10",
                   width: "100%",
-                  minHeight: "30px"
+                  minHeight: "30px",
               }}
         >
             <Container disableGutters
@@ -121,6 +122,7 @@ export default function EditableUsersTable()
                     userID: userData.userID,
                     userName: userData.userName,
                     userEmail: userData.userEmail,
+                    userPhone: userData.userPhone,
                     gender: userData.gender
                 }} bgColor={(index & 1) == 0 ? "#ededed" : "#d9d9d9"}/>
             })}

@@ -1,6 +1,6 @@
 import React from "react";
 
-import {createEvent, createStore, forward, sample} from "effector"
+import {createEvent, createStore, forward, guard, sample} from "effector"
 import {Box, Button, Stack, Typography} from "@mui/material";
 import TextField from '@mui/material/TextField';
 import {useStore} from "effector-react";
@@ -9,14 +9,32 @@ import {EditScreenState} from "./EditScreenStores";
 
 import ManIcon from '@mui/icons-material/Face6Rounded';
 import WomanIcon from '@mui/icons-material/Face3Rounded';
-import {Option, OptionGroupWithOptions} from "../api/ApiTypes";
+import {UserWithFullInfo, Option, OptionGroupWithOptions} from "../api/ApiTypes";
 
-import {optionsLoadFx} from "../api/APIEffects";
+import {addUserWithFullInfoFx, optionsLoadFx, userPreviewsLoadFx} from "../api/APIEffects";
 import {OptionGroupsDisplay} from "./OptionGroupsDisplay";
 
 
+const saveUserEvent = createEvent<UserWithFullInfo>("save_user");
+
+forward({
+    from: saveUserEvent,
+    to: addUserWithFullInfoFx
+});
+
+
 const exitDialogEvent = createEvent("exit_user_append_dialog");
-const isFormPendingStore = createStore<boolean>(false);
+const isFormPendingStore = createStore<boolean>(false)
+    .on(saveUserEvent, () => true)
+    .on(addUserWithFullInfoFx.done, () => false);
+
+guard({
+    source: addUserWithFullInfoFx.doneData,
+    filter: payload => {
+        return payload;
+    },
+    target: [exitDialogEvent, userPreviewsLoadFx]
+});
 
 const clearStores = createEvent("clear_user_append_dialog_stores");
 
@@ -40,6 +58,10 @@ const userPhoneStore = createStore<string | null>(null)
 
 const allOptionGroupsStore = createStore<Array<OptionGroupWithOptions> | null>(null)
     .on(clearStores, () => {return null});
+
+const updateAboutString = createEvent<string>("update_about_string")
+const userAboutStringStore = createStore<string | null>(null)
+    .on(updateAboutString, (old, payload) => {return payload});
 
 const requestAllOptionGroupsFromServer = createEvent("request_all_options");
 
@@ -112,15 +134,32 @@ const radioGenderSelectWomanEvent = createEvent("radio_gender_select_woman");
 userRadioGenderStore.on(radioGenderSelectManEvent, () => {return "MAN"});
 userRadioGenderStore.on(radioGenderSelectWomanEvent, () => {return "WOMAN"});
 
+function GetSelectedOptionsFromGroups(groups: Array<OptionGroupWithOptions>): Array<Option>
+{
+    let selectedOptions = new Array<Option>();
+
+    groups.forEach((group) =>
+    {
+        group.options.forEach((option) =>
+        {
+            if (option.optionSelected)
+                selectedOptions.push(option);
+        });
+    });
+
+    return selectedOptions;
+}
+
 export function AppendUserDialog()
 {
-    const isFormPending = useStore(isFormPendingStore);
+    let isFormPending = useStore(isFormPendingStore);
 
     const userName = useStore(userNameStore);
     const userEmail = useStore(userEmailStore);
     const userPhone = useStore(userPhoneStore);
     const radioGender = useStore(userRadioGenderStore);
     const allOptionsGroups = useStore(allOptionGroupsStore);
+    const aboutString = useStore(userAboutStringStore);
 
     let formMessage = <Typography>Добавление пользователя</Typography>;
 
@@ -159,20 +198,26 @@ export function AppendUserDialog()
             }} height={"70%"} width={"90%"} spacing={1}>
                 <Typography fontStyle={"oblique"}>Основная информация</Typography>
                 <TextField sx={{userSelect: "none"}} disabled={true} variant="standard" label="ID" value={"ID не создан: пользователя нет в базе"}></TextField>
-                <TextField onChange={e => {
+                <TextField disabled={isFormPending} onChange={e => {
                     updateUserNameEvent(e.target.value)
                 }} variant="standard" label="Имя"></TextField>
-                <TextField onChange={e => updateUserEmailEvent(e.target.value) } variant="standard" label="Почта"></TextField>
-                <TextField onChange={e => updateUserPhoneEvent(e.target.value) } variant="standard" label="Телефон"></TextField>
+                <TextField disabled={isFormPending} onChange={e => { if (!isFormPending) updateUserEmailEvent(e.target.value)} } variant="standard" label="Почта"></TextField>
+                <TextField disabled={isFormPending} onChange={e => { if(!isFormPending) updateUserPhoneEvent(e.target.value)} } variant="standard" label="Телефон"></TextField>
                 <Typography>Пол</Typography>
                 <Box>
-                    <ManIcon onClick={() => radioGenderSelectManEvent()} fontSize="large" color={radioGender === "MAN" ? "primary" : "disabled"}/>
-                    <WomanIcon onClick={() => radioGenderSelectWomanEvent()} fontSize="large" color={radioGender === "WOMAN" ? "primary" : "disabled"}/>
+                    <ManIcon onClick={() =>
+                    {
+                        if (!isFormPending)
+                            radioGenderSelectManEvent();
+                    }} fontSize="large" color={radioGender === "MAN" ? "primary" : "disabled"}/>
+                    <WomanIcon onClick={() => {
+                        if (!isFormPending)
+                            radioGenderSelectWomanEvent();
+                    }} fontSize="large" color={radioGender === "WOMAN" ? "primary" : "disabled"}/>
                 </Box>
                 <Typography fontStyle={"italic"}>Дополнительная информация</Typography>
 
-                <TextField multiline variant="outlined" label="О себе"></TextField>
-
+                <TextField onChange={(e) => updateAboutString(e.target.value)} disabled={isFormPending} multiline variant="outlined" label="О себе"></TextField>
                 {
                     allOptionsGroups === null
                         ? <Button onClick={() => requestAllOptionGroupsFromServer()} disabled={isFormPending} variant={"outlined"}>Загрузить все опции</Button>
@@ -194,7 +239,27 @@ export function AppendUserDialog()
                 }}
             >
                 <Button onClick={() => exitDialogEvent()} disabled={isFormPending} variant={"outlined"}>Отмена</Button>
-                <Button disabled={isFormPending || !formFilled} color={"success"} variant={"contained"}>Добавить</Button>
+                <Button onClick={() =>
+                {
+                    if (userName === null || userName === "") return;
+                    if (userEmail === null || userEmail === "") return;
+                    if (userPhone === null || userPhone === "") return;
+
+
+                    saveUserEvent({
+                        requiredInfo:
+                        {
+                            userID: "NO ID WHEN APPENDING",
+                            userName: userName,
+                            userEmail: userEmail,
+                            userPhone: userPhone,
+                            gender: radioGender
+                        },
+                        aboutString: aboutString,
+                        options: allOptionsGroups === null ? [] : GetSelectedOptionsFromGroups(allOptionsGroups)
+                    });
+
+                }} disabled={isFormPending || !formFilled} color={"success"} variant={"contained"}>Добавить</Button>
             </Box>
         </Box>
     </Box>

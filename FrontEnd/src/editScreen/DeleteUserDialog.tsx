@@ -1,18 +1,19 @@
 import React from "react";
 
-import {EditScreenState, editScreenStateStore, userInDialogStore, UserRestrictedData} from "./EditScreenStores";
+import {EditScreenState, editScreenStateStore, userInDialogStore} from "./EditScreenStores";
 
 import {Box, Button, Typography} from "@mui/material";
 import {useStore} from "effector-react";
 import {createEvent, createStore, forward, sample} from "effector";
 import {userDeleteFx, userPreviewsLoadFx} from "../api/APIEffects";
+import {UserRequiredData} from "../api/ApiTypes";
 
 
 const deleteDialogErrorMessageStore = createStore<string | null>(null);
 const deleteDialogFormAvailable = createStore<boolean>(true);
 
 const exitUserDeletionDialog = createEvent("cancel_user_deletion");
-const submitUserDeletion = createEvent<UserRestrictedData>("submit_user_deletion");
+const submitUserDeletion = createEvent<UserRequiredData>("submit_user_deletion");
 const deleteErrorMessageInDialog = createEvent("clear_dialog_error_message");
 
 deleteDialogErrorMessageStore.on(deleteErrorMessageInDialog, () => null);

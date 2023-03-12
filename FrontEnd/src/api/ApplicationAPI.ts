@@ -1,7 +1,6 @@
 import {authenticateUserFx} from "../loginScreen/LoginEvents";
-import {optionsLoadFx, userDeleteFx, userPreviewsLoadFx} from "./APIEffects";
-import {UserRestrictedData} from "../editScreen/EditScreenStores";
-import {OptionGroupWithOptions} from "./ApiTypes";
+import {addUserWithFullInfoFx, optionsLoadFx, userDeleteFx, userPreviewsLoadFx} from "./APIEffects";
+import {OptionGroupWithOptions, UserRequiredData, UserWithFullInfo} from "./ApiTypes";
 
 let token: string;
 
@@ -25,10 +24,7 @@ export async function ApiLoadAllUsersIDS(): Promise<Array<string> | null>
         const userIDsJson = await fetch(`${API_URI}/users/ids`,
         {
             method: "POST",
-            headers:
-                {
-                    "Content-Type": "application/json"
-                },
+            headers: {"Content-Type": "application/json"},
             body: payload
         }).then(res => res.json());
 
@@ -43,7 +39,7 @@ export async function ApiLoadAllUsersIDS(): Promise<Array<string> | null>
     }
 }
 
-async function ApiLoadUserPreviews(ids: Array<string>) : Promise<Array<UserRestrictedData> | null>
+async function ApiLoadUserPreviews(ids: Array<string>) : Promise<Array<UserRequiredData> | null>
 {
     try
     {
@@ -55,10 +51,7 @@ async function ApiLoadUserPreviews(ids: Array<string>) : Promise<Array<UserRestr
         const usersJson = await fetch(`${API_URI}/users`,
             {
                 method: "POST",
-                headers:
-                    {
-                        "Content-Type": "application/json"
-                    },
+                headers: {"Content-Type": "application/json"},
                 body: payload
             }).then(res => res.json());
 
@@ -75,11 +68,12 @@ async function ApiLoadUserPreviews(ids: Array<string>) : Promise<Array<UserRestr
 
         return users.map((val, index) =>
         {
-            const mapped: UserRestrictedData =
+            const mapped: UserRequiredData =
             {
                 userID: ids[index],
                 userName: val.name,
                 userEmail: val.email,
+                userPhone: val.phone,
                 gender: ((val.gender & 1) ? "WOMAN" : "MAN")
             };
             return mapped;
@@ -106,10 +100,7 @@ async function ApiDeleteUser(userId: string): Promise<boolean>
         const resp = await fetch(`${API_URI}/user/delete`,
             {
                 method: "POST",
-                headers:
-                    {
-                        "Content-Type": "application/json"
-                    },
+                headers: {"Content-Type": "application/json"},
                 body: payload
             });
 
@@ -119,7 +110,6 @@ async function ApiDeleteUser(userId: string): Promise<boolean>
             return false;
 
         return respObj.response;
-
     }
     catch (e)
     {
@@ -156,6 +146,34 @@ async function ApiLoadOptionGroups() : Promise<OptionGroupWithOptions[] | null>
     }
 }
 
+async function ApiAddUserWithFullInfo(newUserWithInfo: UserWithFullInfo): Promise<boolean>
+{
+    try
+    {
+        const payload = JSON.stringify({token: token, newUser: newUserWithInfo});
+
+        const resp = await fetch(`${API_URI}/user/add/full`,
+            {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: payload
+            });
+
+        const respObj = await resp.json();
+
+        if (respObj.error)
+            return false;
+
+        return respObj.response;
+    }
+    catch(e: any)
+    {
+        return false;
+    }
+}
+
+
+
 
 export function RegisterApiEffects()
 {
@@ -187,6 +205,10 @@ export function RegisterApiEffects()
         return ApiLoadOptionGroups();
     });
 
+    addUserWithFullInfoFx.use(async (payload) =>
+    {
+        return ApiAddUserWithFullInfo(payload);
+    });
 }
 
 

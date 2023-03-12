@@ -1,18 +1,6 @@
-import {createStore, forward} from "effector";
-import
-{
-    updateUsersListEvent,
-    updateUserInAnyDialog,
-    updateScreenStateEvent
-} from "./EditScreenEvents";
-
-export type UserRestrictedData =
-{
-    userID: string,
-    userName: string,
-    userEmail: string,
-    gender: "MAN" | "WOMAN"
-};
+import {createStore} from "effector";
+import {updateScreenStateEvent, updateUserInAnyDialog, updateUsersListEvent} from "./EditScreenEvents";
+import {UserRequiredData} from "../api/ApiTypes";
 
 export enum EditScreenState
 {
@@ -26,8 +14,8 @@ export const editScreenStateStore = createStore<EditScreenState>(EditScreenState
 
 
 
-export const usersStore = createStore<Array<UserRestrictedData>>([]);
-export const userInDialogStore = createStore<UserRestrictedData | null>(null);
+export const usersStore = createStore<Array<UserRequiredData>>([]);
+export const userInDialogStore = createStore<UserRequiredData | null>(null);
 
 userInDialogStore.on(updateUserInAnyDialog, (oldUser, newUser) =>
 {

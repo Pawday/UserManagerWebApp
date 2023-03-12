@@ -16,6 +16,7 @@ import DatabaseInitialiseHandler from "./handlers/DatabaseInitialiseHandler";
 import PostSingleUserInfoHandler from "./handlers/PostSingleUserInfoHandler";
 import DeleteUserHandler from "./handlers/DeleteUserHandler";
 import {GetAllOptionGroupsWithOptionsHandler} from "./handlers/complexHandlers/GetAllOptionGroupsWithOptionsHandler";
+import {AddUserWithFullInfoHandler} from "./handlers/complexHandlers/AddUserWithFullInfoHandler";
 
 
 
@@ -48,6 +49,7 @@ APIRouter.post("/users", TokenAuthorization, RootAuthorization, GetMultipleUsers
 
 APIRouter.post("/users/ids", TokenAuthorization, RootAuthorization, GetAllUsersIDSHandler);
 APIRouter.post("/user/add", TokenAuthorization, RootAuthorization, AddSingleUserHandler);
+APIRouter.post("/user/add/full", TokenAuthorization, RootAuthorization, AddUserWithFullInfoHandler);
 
 APIRouter.post("/db/init", TokenAuthorization, RootAuthorization, DatabaseInitialiseHandler);
 
