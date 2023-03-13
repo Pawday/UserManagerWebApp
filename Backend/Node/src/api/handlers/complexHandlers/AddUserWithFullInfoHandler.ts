@@ -5,29 +5,7 @@ import APIDatabase from "../../APIDatabase";
 import {UserAdditionalInfo} from "../../database/entities/UserAdditionalInfo";
 import {User, UserGender} from "../../database/entities/User";
 import {CheckDBConnectionAndSendError} from "../ResponseUtils";
-
-type Option =
-{
-    optionID: string,
-    optionName: string,
-    optionSelected: boolean | undefined
-};
-
-
-type UserRequiredData =
-{
-    userID: string,
-    userName: string,
-    userEmail: string,
-    userPhone: string,
-    gender: "MAN" | "WOMAN"
-};
-type UserWithFullInfo =
-{
-    requiredInfo: UserRequiredData,
-    aboutString: string | null,
-    options: Array<Option> | null
-}
+import {UserWithFullInfo} from "./UserFrontEndTypes";
 
 
 /*
@@ -66,7 +44,7 @@ export async function AddUserWithFullInfoHandler(req: Request, resp: Response)
 
     // 1. Check provided options exist and return false if they're not
     const providedOptions = userWithInfoInput.options;
-    let needMapOptions;
+    let needMapOptions = true;
 
     if (providedOptions === null || providedOptions.length === 0)
         needMapOptions = false;

@@ -5,6 +5,7 @@ import {EditScreenState, editScreenStateStore} from "./EditScreenStores";
 import {useStore} from "effector-react";
 import {DeleteUserDialog} from "./DeleteUserDialog";
 import {AppendUserDialog} from "./AppendUserDialog";
+import {EditUserDialog} from "./EditUserDialog";
 
 
 export function EditScreen()
@@ -19,6 +20,9 @@ export function EditScreen()
 
     if (editScreenState === EditScreenState.APPEND_USER)
         dialog = <AppendUserDialog/>
+
+    if (editScreenState === EditScreenState.EDIT_USER)
+        dialog = <EditUserDialog/>
 
     return <Container
         disableGutters={true}

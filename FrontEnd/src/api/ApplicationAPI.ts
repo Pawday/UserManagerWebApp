@@ -1,5 +1,5 @@
 import {authenticateUserFx} from "../loginScreen/LoginEvents";
-import {addUserWithFullInfoFx, optionsLoadFx, userDeleteFx, userPreviewsLoadFx} from "./APIEffects";
+import {addUserWithFullInfoFx, loadFullUserInfoFx, optionsLoadFx, userDeleteFx, userPreviewsLoadFx} from "./APIEffects";
 import {OptionGroupWithOptions, UserRequiredData, UserWithFullInfo} from "./ApiTypes";
 
 let token: string;
@@ -172,7 +172,32 @@ async function ApiAddUserWithFullInfo(newUserWithInfo: UserWithFullInfo): Promis
     }
 }
 
+async function LoadUserWithFullInfo(userId: string): Promise<UserWithFullInfo | null>
+{
+    try
+    {
+        const payload = JSON.stringify({token: token, user_id: userId});
 
+        const resp = await fetch(`${API_URI}/user/get/full`,
+            {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: payload
+            });
+
+        const respObj = await resp.json();
+
+        if (respObj.error)
+            return null;
+
+        return respObj.response;
+
+    }
+    catch (e: any)
+    {
+        return null;
+    }
+}
 
 
 export function RegisterApiEffects()
@@ -208,6 +233,11 @@ export function RegisterApiEffects()
     addUserWithFullInfoFx.use(async (payload) =>
     {
         return ApiAddUserWithFullInfo(payload);
+    });
+
+    loadFullUserInfoFx.use(async (userId) =>
+    {
+        return LoadUserWithFullInfo(userId);
     });
 }
 

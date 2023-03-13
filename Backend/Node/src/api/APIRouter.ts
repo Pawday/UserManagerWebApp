@@ -17,6 +17,7 @@ import PostSingleUserInfoHandler from "./handlers/PostSingleUserInfoHandler";
 import DeleteUserHandler from "./handlers/DeleteUserHandler";
 import {GetAllOptionGroupsWithOptionsHandler} from "./handlers/complexHandlers/GetAllOptionGroupsWithOptionsHandler";
 import {AddUserWithFullInfoHandler} from "./handlers/complexHandlers/AddUserWithFullInfoHandler";
+import {GetFullUserInfoHandler} from "./handlers/complexHandlers/GetFullUserInfoHandler";
 
 
 
@@ -41,6 +42,7 @@ APIRouter.post("/auth", AuthenticateHandler);
 
 APIRouter.post("/user/info", TokenAuthorization, RootAuthorization, PostSingleUserInfoHandler);
 APIRouter.post("/user/get", TokenAuthorization, RootAuthorization, GetSingleUserHandler);
+APIRouter.post("/user/get/full", TokenAuthorization, RootAuthorization, GetFullUserInfoHandler);
 APIRouter.post("/user/delete", TokenAuthorization, RootAuthorization, DeleteUserHandler);
 
 APIRouter.post("/options/fullTree", TokenAuthorization, RootAuthorization, GetAllOptionGroupsWithOptionsHandler);

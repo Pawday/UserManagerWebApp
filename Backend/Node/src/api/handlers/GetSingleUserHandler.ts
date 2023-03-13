@@ -11,7 +11,7 @@ async function GetSingleUserHandler(req: Request, resp: Response)
 
     let apiResp: APIResponse = new APIResponse();
 
-    let userId = ValidateUserIDInputAndSendErrorIfNotValid(req, resp);
+    let userId = await ValidateUserIDInputAndSendErrorIfNotValid(req, resp);
 
     if (userId === null) return;
 

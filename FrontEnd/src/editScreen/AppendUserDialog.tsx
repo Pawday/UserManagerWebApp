@@ -239,8 +239,7 @@ export function AppendUserDialog()
                     display: "flex",
                     justifyContent: "space-around",
                     width: "100%"
-                }}
-            >
+                }}>
                 <Button onClick={() => exitDialogEvent()} disabled={isFormPending} variant={"outlined"}>Отмена</Button>
                 <Button onClick={() =>
                 {
