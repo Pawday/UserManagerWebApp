@@ -290,17 +290,22 @@ export class MongoDatabase implements IDatabase
         if (optionToBind === null)
             return false;
 
-        const userAmWithAlreadyProvidedOption = await ResolveOrNull(this.UserModel.count({
-            id: {
-                $eq: userId.id
-            },
-            options : optionID.id
-        }).exec());
+        // I have no idea how to properly make mongo select user with specific ID and in its "options" array exist requested optionID
+
+        // ("find" method returns another id idn why)
+        //      find({id: {$eq: <requestedID>}}) -> MONGO SAID NO
+        //      find({_id: {$eq: <requestedID>}}) -> MONGO SAID NO
+        //      find({__id: {$eq: <requestedID>}}) -> MONGO SAID NO
+
+        // So i decided to select user wia "stable" findById method...
+        const userAmWithAlreadyProvidedOption = await ResolveOrNull(this.UserModel.findById(userId.id, {options: true}).exec());
 
         if (userAmWithAlreadyProvidedOption === null)
             return false;
 
-        if (userAmWithAlreadyProvidedOption !== 0)
+        //... and compare EACH optionID with provided optionID
+        // its O(n) and executed on Node.js side - BUT ITS WORKING
+        if (-1 !== userAmWithAlreadyProvidedOption.options.findIndex(usersOption => {return usersOption._id === optionID.id}))
             return false;
 
         let userBindTo = await ResolveOrNull(this.UserModel.findById(userId.id).exec());
