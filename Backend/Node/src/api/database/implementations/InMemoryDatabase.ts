@@ -75,12 +75,12 @@ export class InMemoryDatabase implements IDatabase
         if (this._users.length <= userId.id)
             return false;
 
-        let deletedUser = this._deletedUsers.find((deletedId) =>
+        let deletedUser = this._deletedUsers.findIndex((deletedId) =>
         {
             return deletedId.id === userId.id;
         });
 
-        if (deletedUser === undefined)
+        if (-1 === deletedUser)
             return false;
 
         return true;
@@ -175,12 +175,14 @@ export class InMemoryDatabase implements IDatabase
 
     async GetAllUsersIDs(): Promise<DBEntityID[]>
     {
-        return this._users
-            .map((_, index) => new InMemoryDBEntityId(index))
-            .filter(async (userId,index) =>
-        {
-            return !await this.CheckUserDeleted(userId);
-        });
+        //https://advancedweb.hu/how-to-use-async-functions-with-array-filter-in-javascript/
+
+        const ids = this._users.map((_, index) => new InMemoryDBEntityId(index));
+        const idsIndexesDeletedBoolArr = await Promise.all(ids.map(async (id) => !await this.CheckUserDeleted(id)));
+
+        const filteredIds = ids.filter((_,index) => idsIndexesDeletedBoolArr[index]);
+
+        return filteredIds;
     }
 
     async AddUserAdditionalInfo(info: UserAdditionalInfo): Promise<DBEntityID | null>
@@ -281,7 +283,7 @@ export class InMemoryDatabase implements IDatabase
     async GetOptionsByIDs(optionIDs: InMemoryDBEntityId[]): Promise<SelectableOption[] | null>
     {
         if (optionIDs.length > this._options.length)
-            return null;
+            return [];
 
 
         let foundOptions = optionIDs.map((optionID) =>
@@ -294,7 +296,7 @@ export class InMemoryDatabase implements IDatabase
         });
 
         if (foundOptions.length !== optionIDs.length)
-            return null;
+            return [];
 
         return foundOptions as Array<SelectableOption>;
     }
