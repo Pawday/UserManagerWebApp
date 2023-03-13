@@ -9,7 +9,7 @@ async function GetAllUsersIDSHandler(req: Request, resp: Response)
 
     const apiResp: APIResponse = new APIResponse();
 
-    apiResp.response = (await APIDatabase.GetAllUsersIDs()).map(id => id.toString());
+    apiResp.response = (await APIDatabase().GetAllUsersIDs()).map(id => id.toString());
 
     apiResp.SendTo(resp);
 }

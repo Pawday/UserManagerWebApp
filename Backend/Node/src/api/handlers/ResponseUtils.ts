@@ -24,7 +24,7 @@ export function SendInputNotValidError(resp: Response, fiendName: string)
 
 export function CheckDBConnectionAndSendError(resp: Response) : boolean
 {
-    if (APIDatabase.CheckConnection()) return true;
+    if (APIDatabase().CheckConnection()) return true;
 
     let apiResponse: APIResponse = new APIResponse();
     apiResponse.error =  new APIError(APIErrorType.DATABASE_ERROR, "Database connection error");

@@ -57,7 +57,7 @@ async function PostSingleUserHandler(req: Request, resp: Response)
     );
 
 
-    let addUserResult = await APIDatabase.AddUser(postedUser);
+    let addUserResult = await APIDatabase().AddUser(postedUser);
 
 
     if (addUserResult === null)

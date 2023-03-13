@@ -21,7 +21,7 @@ export async function GetFullUserInfoHandler(req: Request, resp: Response)
         return;
     }
 
-    let user = await APIDatabase.GetUserById(userId);
+    let user = await APIDatabase().GetUserById(userId);
 
     if (user === null)
     {
@@ -30,7 +30,7 @@ export async function GetFullUserInfoHandler(req: Request, resp: Response)
         return;
     }
 
-    const optionsIDS = await APIDatabase.GetUserOptionsIDsByUserId(userId);
+    const optionsIDS = await APIDatabase().GetUserOptionsIDsByUserId(userId);
 
     let retOptions = new Array<Option>();
 
@@ -39,7 +39,7 @@ export async function GetFullUserInfoHandler(req: Request, resp: Response)
         for (let optionIndex = 0; optionIndex < optionsIDS.length; optionIndex++)
         {
             const optionsID = optionsIDS[optionIndex];
-            const optionFromDB = await APIDatabase.GetOptionById(optionsID);
+            const optionFromDB = await APIDatabase().GetOptionById(optionsID);
 
             if (optionFromDB === null)
             {
@@ -58,7 +58,7 @@ export async function GetFullUserInfoHandler(req: Request, resp: Response)
     }
 
 
-    const addInfo = await APIDatabase.GetUserInfoByUserId(userId);
+    const addInfo = await APIDatabase().GetUserInfoByUserId(userId);
 
     let returnObj: UserWithFullInfo = {
         requiredInfo: {

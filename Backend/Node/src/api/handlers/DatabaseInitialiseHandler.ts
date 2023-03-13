@@ -18,7 +18,7 @@ async function DatabaseInitialiseHandler(req: Request, resp: Response)
 {
     CheckDBConnectionAndSendError(resp);
 
-    let movieGenresGroupDBID: DBEntityID | null = await APIDatabase.AddOptionGroup(new SelectableOptionGroup("Жанры фильмов"));
+    let movieGenresGroupDBID: DBEntityID | null = await APIDatabase().AddOptionGroup(new SelectableOptionGroup("Жанры фильмов"));
 
     if (movieGenresGroupDBID == null)
     {
@@ -38,14 +38,14 @@ async function DatabaseInitialiseHandler(req: Request, resp: Response)
     for (let optionToAddIndex = 0; optionToAddIndex < movieOptionsAsStrings.length; optionToAddIndex++)
     {
         const value = movieOptionsAsStrings[optionToAddIndex];
-        let optionId = await APIDatabase.AddOption(new SelectableOption(value));
+        let optionId = await APIDatabase().AddOption(new SelectableOption(value));
         if (optionId == null)
         {
             resp.send(`Inserting ${value} to option list failed`);
             resp.end();
             return;
         }
-        let optionBindStatus = await APIDatabase.BindOptionToOptionGroup(optionId, movieGenresGroupDBID);
+        let optionBindStatus = await APIDatabase().BindOptionToOptionGroup(optionId, movieGenresGroupDBID);
         if (!optionBindStatus)
         {
             resp.send(`Binding option ${value} to its option group failed`);
@@ -54,7 +54,7 @@ async function DatabaseInitialiseHandler(req: Request, resp: Response)
         }
     }
 
-    let hobbyGroupDBID = await APIDatabase.AddOptionGroup(new SelectableOptionGroup("Хобби"));
+    let hobbyGroupDBID = await APIDatabase().AddOptionGroup(new SelectableOptionGroup("Хобби"));
 
 
     if (hobbyGroupDBID == null)
@@ -78,14 +78,14 @@ async function DatabaseInitialiseHandler(req: Request, resp: Response)
     for (let optionToAddIndex = 0; optionToAddIndex < hobbyOptionAsStrings.length; optionToAddIndex++)
     {
         const value = hobbyOptionAsStrings[optionToAddIndex];
-        let optionId = await APIDatabase.AddOption(new SelectableOption(value));
+        let optionId = await APIDatabase().AddOption(new SelectableOption(value));
         if (optionId == null)
         {
             resp.send(`Inserting ${value} to option list failed`);
             resp.end();
             return;
         }
-        let optionBindStatus = await APIDatabase.BindOptionToOptionGroup(optionId, hobbyGroupDBID);
+        let optionBindStatus = await APIDatabase().BindOptionToOptionGroup(optionId, hobbyGroupDBID);
         if (!optionBindStatus)
         {
             resp.send(`Binding option ${value} to its option group failed`);

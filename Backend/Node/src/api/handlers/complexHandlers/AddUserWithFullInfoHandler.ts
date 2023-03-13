@@ -58,7 +58,7 @@ export async function AddUserWithFullInfoHandler(req: Request, resp: Response)
         {
             optionsToMapIDS = providedOptions.map((op) =>
             {
-                const dbId = APIDatabase.ConvertToDBEntityIDFrom(op.optionID);
+                const dbId = APIDatabase().ConvertToDBEntityIDFrom(op.optionID);
 
                 if (dbId === null) throw "Provided invalid id";
                 return dbId;
@@ -74,7 +74,7 @@ export async function AddUserWithFullInfoHandler(req: Request, resp: Response)
 
     if (needMapOptions && (optionsToMapIDS !== null))
     {
-        let options = await APIDatabase.GetOptionsByIDs(optionsToMapIDS);
+        let options = await APIDatabase().GetOptionsByIDs(optionsToMapIDS);
 
         if (options === null)
         {
@@ -100,7 +100,7 @@ export async function AddUserWithFullInfoHandler(req: Request, resp: Response)
 
 
     if (userInfo !== null)
-        userInfoID = await APIDatabase.AddUserAdditionalInfo(userInfo)
+        userInfoID = await APIDatabase().AddUserAdditionalInfo(userInfo)
 
     if (userInfo && userInfoID === null)
     {
@@ -117,7 +117,7 @@ export async function AddUserWithFullInfoHandler(req: Request, resp: Response)
         userWithInfoInput.requiredInfo.userPhone,
         userWithInfoInput.requiredInfo.gender === "MAN" ? UserGender.MAN : UserGender.WOMAN);
 
-    const userID = await APIDatabase.AddUser(user);
+    const userID = await APIDatabase().AddUser(user);
 
     if (userID === null)
     {
@@ -130,11 +130,11 @@ export async function AddUserWithFullInfoHandler(req: Request, resp: Response)
     }
     if (userInfo && userInfoID !== null)
     {
-        const bindStatus = await APIDatabase.BindUserInfoToUser(userID, userInfoID);
+        const bindStatus = await APIDatabase().BindUserInfoToUser(userID, userInfoID);
 
         if (false === bindStatus)
         {
-            APIDatabase.DeleteUserByID(userID);
+            APIDatabase().DeleteUserByID(userID);
 
             apiResp.error = new APIError(APIErrorType.DATABASE_ERROR, "Cannot bind info to user");
             apiResp.SendTo(resp);
@@ -147,9 +147,9 @@ export async function AddUserWithFullInfoHandler(req: Request, resp: Response)
     {
         for (let optionIndex = 0; optionIndex < optionsToMapIDS.length; optionIndex++)
         {
-            if (await APIDatabase.BindOptionToUser(optionsToMapIDS[optionIndex], userID)) continue;
+            if (await APIDatabase().BindOptionToUser(optionsToMapIDS[optionIndex], userID)) continue;
 
-            APIDatabase.DeleteUserByID(userID);
+            APIDatabase().DeleteUserByID(userID);
 
             // TODO: b) delete userInfo as well
 

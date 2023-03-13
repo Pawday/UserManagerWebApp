@@ -53,7 +53,7 @@ export async function GetAllOptionGroupsWithOptionsHandler(req: Request, resp: R
 {
     let apiResp = new APIResponse();
 
-    const optionsGroupsIDs = await APIDatabase.GetAllOptionGroupsIDs();
+    const optionsGroupsIDs = await APIDatabase().GetAllOptionGroupsIDs();
 
     if (optionsGroupsIDs === null)
     {
@@ -62,7 +62,7 @@ export async function GetAllOptionGroupsWithOptionsHandler(req: Request, resp: R
         return;
     }
 
-    const optionGroups = await APIDatabase.GetOptionsByIDs(optionsGroupsIDs);
+    const optionGroups = await APIDatabase().GetOptionsByIDs(optionsGroupsIDs);
 
     if (optionGroups === null)
     {
@@ -79,7 +79,7 @@ export async function GetAllOptionGroupsWithOptionsHandler(req: Request, resp: R
     for (let groupIndex = 0; groupIndex < optionsGroupsIDs.length && false === hasErrorInLoop; groupIndex++)
     {
         const currentGroupID = optionsGroupsIDs[groupIndex];
-        const currentGroup = await APIDatabase.GetOptionGroupByID(currentGroupID);
+        const currentGroup = await APIDatabase().GetOptionGroupByID(currentGroupID);
 
         if (currentGroup === null)
         {
@@ -87,7 +87,7 @@ export async function GetAllOptionGroupsWithOptionsHandler(req: Request, resp: R
             continue;
         }
 
-        const currentGroupOptionsIds = await APIDatabase.GetOptionsIDsByGroupID(currentGroupID);
+        const currentGroupOptionsIds = await APIDatabase().GetOptionsIDsByGroupID(currentGroupID);
 
         if (currentGroupOptionsIds === null)
         {
@@ -95,7 +95,7 @@ export async function GetAllOptionGroupsWithOptionsHandler(req: Request, resp: R
             continue;
         }
 
-        const currentGroupOptions = await APIDatabase.GetOptionsByIDs(currentGroupOptionsIds);
+        const currentGroupOptions = await APIDatabase().GetOptionsByIDs(currentGroupOptionsIds);
 
         if (currentGroupOptions === null)
         {

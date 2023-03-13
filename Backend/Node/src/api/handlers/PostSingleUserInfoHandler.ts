@@ -21,7 +21,7 @@ async function PostSingleUserInfoHandler(req: Request, resp: Response)
         return;
     }
 
-    const userIdDB = await APIDatabase.ConvertToDBEntityIDFrom(userIdInput);
+    const userIdDB = await APIDatabase().ConvertToDBEntityIDFrom(userIdInput);
 
     if (userIdDB === null)
     {
@@ -29,7 +29,7 @@ async function PostSingleUserInfoHandler(req: Request, resp: Response)
         return;
     }
 
-    let userFromDB = await APIDatabase.GetUserById(userIdDB);
+    let userFromDB = await APIDatabase().GetUserById(userIdDB);
 
     if (userFromDB == null)
     {
@@ -39,7 +39,7 @@ async function PostSingleUserInfoHandler(req: Request, resp: Response)
     }
 
 
-    if (await APIDatabase.GetUserAdditionalInfoById(userIdDB) !== null)
+    if (await APIDatabase().GetUserAdditionalInfoById(userIdDB) !== null)
     {
         apiResponse.error = new APIError(APIErrorType.INVALID_INPUT, "This user already have info, use EditUserInfo");
         apiResponse.SendTo(resp);
@@ -80,7 +80,7 @@ async function PostSingleUserInfoHandler(req: Request, resp: Response)
 
     for (let index = 0; index < userSelectedOptionsAsStringArray.length; index++)
     {
-        let optionValidIDOrNull = await APIDatabase.ConvertToDBEntityIDFrom(userSelectedOptionsAsStringArray[index]);
+        let optionValidIDOrNull = await APIDatabase().ConvertToDBEntityIDFrom(userSelectedOptionsAsStringArray[index]);
 
         if (optionValidIDOrNull == null)
         {
@@ -93,7 +93,7 @@ async function PostSingleUserInfoHandler(req: Request, resp: Response)
 
     for (let index = 0; index < validatedOptionsDBIds.length; index++)
     {
-        let isOptionExist = await APIDatabase.IsOptionExistById(validatedOptionsDBIds[index]);
+        let isOptionExist = await APIDatabase().IsOptionExistById(validatedOptionsDBIds[index]);
 
         if (!isOptionExist)
         {
@@ -102,7 +102,7 @@ async function PostSingleUserInfoHandler(req: Request, resp: Response)
             return;
         }
 
-        let bindStatus = await APIDatabase.BindOptionToUser(validatedOptionsDBIds[index], userIdDB);
+        let bindStatus = await APIDatabase().BindOptionToUser(validatedOptionsDBIds[index], userIdDB);
 
         if (!bindStatus)
         {
@@ -115,7 +115,7 @@ async function PostSingleUserInfoHandler(req: Request, resp: Response)
 
     let userAdditionalInfoToUpload = new UserAdditionalInfo(userAboutString);
 
-    let infoID = await APIDatabase.AddUserAdditionalInfo(userAdditionalInfoToUpload);
+    let infoID = await APIDatabase().AddUserAdditionalInfo(userAdditionalInfoToUpload);
 
     if (infoID === null)
     {
@@ -124,7 +124,7 @@ async function PostSingleUserInfoHandler(req: Request, resp: Response)
         return;
     }
 
-    let updateUsersInfoStatus = await APIDatabase.BindUserInfoToUser(userIdDB, infoID);
+    let updateUsersInfoStatus = await APIDatabase().BindUserInfoToUser(userIdDB, infoID);
 
     if (updateUsersInfoStatus)
         apiResponse.response = "Success";

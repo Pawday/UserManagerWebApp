@@ -16,7 +16,7 @@ export async function ValidateUserIDInputAndSendErrorIfNotValid(req: Request, re
         return null;
     }
 
-    const userId = await APIDatabase.ConvertToDBEntityIDFrom(userIDInput);
+    const userId = await APIDatabase().ConvertToDBEntityIDFrom(userIDInput);
 
     if (userId == null)
     {
