@@ -1,3 +1,8 @@
+type SelectableOptionGroupObj =
+{
+    name: string
+}
+
 export class SelectableOptionGroup
 {
     private readonly _name: string;
@@ -5,6 +10,13 @@ export class SelectableOptionGroup
     constructor(name: string)
     {
         this._name = name;
+    }
+
+    static AsPublicObject(group: SelectableOptionGroup): SelectableOptionGroupObj
+    {
+        return {
+            name: group._name
+        }
     }
 
     static AreEqual(left: SelectableOptionGroup, right: SelectableOptionGroup)

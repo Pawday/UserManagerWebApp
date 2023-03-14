@@ -4,6 +4,14 @@ export enum UserGender
     MAN
 }
 
+type PublicUser =
+{
+    name: string
+    email: string,
+    phone: string,
+    gender: UserGender
+}
+
 export class User
 {
     private readonly _name: string;
@@ -25,7 +33,7 @@ export class User
         this._gender = gender;
     }
 
-    public static AsPublicObject(user: User): object
+    public static AsPublicObject(user: User): PublicUser
     {
         return {
             name: user._name,

@@ -1,4 +1,5 @@
 import crypto from "crypto"
+import {SHOW_ROOT_TOKEN_UPDATE} from "./api/DEV_SWITCHES";
 
 
 export class RootUser
@@ -62,6 +63,10 @@ export class RootUser
 
         RootUser.UpdateTokenAccessTime();
         RootUser._token[0] = crypto.randomUUID().toString();
+
+        if (SHOW_ROOT_TOKEN_UPDATE)
+            console.log(`[DEBUG_DEV] token updated to: ${RootUser._token[0]}`);
+
         return String(RootUser._token[0]).toString();
     }
 

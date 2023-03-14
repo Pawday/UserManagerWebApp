@@ -4,7 +4,9 @@ import {APIError, APIErrorType, APIResponse} from "../../APIResponse";
 import {ValidateUserIDInputAndSendErrorIfNotValid} from "../ValidateRequestInputTools";
 import APIDatabase from "../../APIDatabase";
 import {Option, UserWithFullInfo} from "./UserFrontEndTypes";
-import {UserGender} from "../../database/entities/User";
+import {User, UserGender} from "../../database/entities/User";
+import {UserAdditionalInfo} from "../../database/entities/UserAdditionalInfo";
+import {SelectableOption} from "../../database/entities/SelectableOption";
 
 export async function GetFullUserInfoHandler(req: Request, resp: Response)
 {
@@ -51,7 +53,7 @@ export async function GetFullUserInfoHandler(req: Request, resp: Response)
             retOptions.push(
                 {
                     optionID: optionsID.toString(),
-                    optionName: optionFromDB.name,
+                    optionName: SelectableOption.AsPublicObject(optionFromDB).name,
                     optionSelected: true
                 });
         }
@@ -60,16 +62,25 @@ export async function GetFullUserInfoHandler(req: Request, resp: Response)
 
     const addInfo = await APIDatabase().GetUserInfoByUserId(userId);
 
+    let addInfoPublic = null;
+
+    if (addInfo !== null)
+        addInfoPublic = UserAdditionalInfo.AsPublicObject(addInfo);
+
+
+    const userPublic = User.AsPublicObject(user);
+
+
     let returnObj: UserWithFullInfo = {
         requiredInfo: {
             userID: userId.toString(),
-            userName: user.name,
-            userEmail: user.email,
-            userPhone: user.phone,
-            gender: user.gender === UserGender.MAN ? "MAN" : "WOMAN"
+            userName: userPublic.name,
+            userEmail: userPublic.email,
+            userPhone: userPublic.phone,
+            gender: userPublic.gender === UserGender.MAN ? "MAN" : "WOMAN"
         },
         options: retOptions,
-        aboutString: addInfo?.aboutString || ""
+        aboutString: addInfoPublic?.aboutString || ""
     };
 
     apiResp.response = returnObj;

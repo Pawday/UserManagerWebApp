@@ -1,6 +1,8 @@
 import {Request, Response} from "express";
 import {APIError, APIErrorType, APIResponse} from "../../APIResponse";
 import APIDatabase from "../../APIDatabase";
+import {SelectableOption} from "../../database/entities/SelectableOption";
+import {SelectableOptionGroup} from "../../database/entities/SelectableOptionGroup";
 
 
 /*
@@ -108,7 +110,7 @@ export async function GetAllOptionGroupsWithOptionsHandler(req: Request, resp: R
         for (let optionIndex = 0; optionIndex < currentGroupOptionsIds.length; optionIndex++)
         {
             groupOptions.push({
-                    optionName: currentGroupOptions[optionIndex].name,
+                    optionName: SelectableOption.AsPublicObject(currentGroupOptions[optionIndex]).name,
                     optionID: currentGroupOptionsIds[optionIndex].toString()
                 });
         }
@@ -116,7 +118,7 @@ export async function GetAllOptionGroupsWithOptionsHandler(req: Request, resp: R
 
         let currentOptionGroupWithItsOptions: OptionGroupWithOptions =
             {
-                groupName: currentGroup.name,
+                groupName: SelectableOptionGroup.AsPublicObject(currentGroup).name,
                 groupID: currentGroupID.toString(),
                 options: groupOptions
             }

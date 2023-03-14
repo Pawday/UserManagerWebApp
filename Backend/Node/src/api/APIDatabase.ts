@@ -4,13 +4,13 @@ import {InMemoryDatabase} from "./database/implementations/InMemoryDatabase";
 
 let APIDatabaseInstance: IDatabase | null = null;
 
-function ApiDBInitAsInMemory()
+export function ApiDBInitAsInMemory()
 {
     APIDatabaseInstance = new InMemoryDatabase();
     return;
 }
 
-function ApiDBInitAsMongo(connectionString: string)
+export function ApiDBInitAsMongo(connectionString: string)
 {
     APIDatabaseInstance = new MongoDatabase(connectionString);
 }

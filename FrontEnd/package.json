@@ -7,7 +7,8 @@
     "compile_ts": "tsc --outDir _ts_build",
     "compile_ts_watch": "tsc --outDir _ts_build -w",
     "bundle_debug": "webpack",
-    "bundle_debug_watch": "webpack -w"
+    "bundle_debug_watch": "webpack -w",
+    "bundle_webpack_server": "webpack-dev-server"
   },
   "author": "",
   "dependencies": {
