@@ -4,11 +4,12 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "compile_ts": "tsc --outDir _ts_build",
-    "compile_ts_watch": "tsc --outDir _ts_build -w",
-    "bundle_debug": "webpack",
-    "bundle_debug_watch": "webpack -w",
-    "bundle_webpack_server": "webpack-dev-server"
+    "compile_ts": "npx tsc --outDir _ts_build",
+    "compile_ts_watch": "npx tsc --outDir _ts_build -w",
+    "bundle_debug": "npx webpack",
+    "bundle_release": "npx webpack --mode production",
+    "bundle_debug_watch": "npx webpack -w",
+    "bundle_webpack_server": "npx webpack-dev-server"
   },
   "author": "",
   "dependencies": {

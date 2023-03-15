@@ -24,10 +24,10 @@ if (process.argv.length >= 3)
 
 const rootPassword = crypto.randomUUID();
 
-RootUser.Init("admin", "1");
+RootUser.Init("admin", rootPassword);
 
 console.log(`[INFO] Логин оператора: admin`)
-console.log(`[INFO] Пароль оператора: 1`)
+console.log(`[INFO] Пароль оператора: ${rootPassword}`)
 
 
 if (IGNORE_AUTH)
