@@ -48,6 +48,7 @@ interface IDatabase
     BindOptionToOptionGroup(optionID: DBEntityID, optionGroupID: DBEntityID): Promise<boolean>;
     GetOptionsIDsByGroupID(optionGroupID: DBEntityID): Promise<DBEntityID[] | null>;
     BindOptionToUser(optionID: DBEntityID, userId: DBEntityID): Promise<boolean>;
+    UnbindOptionFromUser(optionID: DBEntityID, userID: DBEntityID): Promise<boolean>;
     GetUserOptionsIDsByUserId(userID: DBEntityID): Promise<DBEntityID[] | null>;
 }
 

@@ -1,5 +1,12 @@
 import {authenticateUserFx} from "../loginScreen/LoginEvents";
-import {addUserWithFullInfoFx, loadFullUserInfoFx, optionsLoadFx, userDeleteFx, userPreviewsLoadFx} from "./APIEffects";
+import {
+    addUserWithFullInfoFx,
+    loadFullUserInfoFx,
+    optionsLoadFx,
+    updateUserWithFullInfo,
+    userDeleteFx,
+    userPreviewsLoadFx
+} from "./APIEffects";
 import {OptionGroupWithOptions, UserRequiredData, UserWithFullInfo} from "./ApiTypes";
 
 let token: string;
@@ -172,7 +179,7 @@ async function ApiAddUserWithFullInfo(newUserWithInfo: UserWithFullInfo): Promis
     }
 }
 
-async function LoadUserWithFullInfo(userId: string): Promise<UserWithFullInfo | null>
+async function ApiLoadUserWithFullInfo(userId: string): Promise<UserWithFullInfo | null>
 {
     try
     {
@@ -196,6 +203,32 @@ async function LoadUserWithFullInfo(userId: string): Promise<UserWithFullInfo | 
     catch (e: any)
     {
         return null;
+    }
+}
+
+async function ApiUpdateUserWithFullInfo(user: UserWithFullInfo): Promise<boolean>
+{
+    try
+    {
+        const payload = JSON.stringify({token: token, newUserData: user, user_id: user.requiredInfo.userID});
+
+        const resp = await fetch(`${API_URI}/user/update/full`,
+            {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: payload
+            });
+
+        const respObj = await resp.json();
+
+        if (respObj.error)
+            return false;
+
+        return respObj.response;
+    }
+    catch (e: any)
+    {
+        return false;
     }
 }
 
@@ -237,7 +270,12 @@ export function RegisterApiEffects()
 
     loadFullUserInfoFx.use(async (userId) =>
     {
-        return LoadUserWithFullInfo(userId);
+        return ApiLoadUserWithFullInfo(userId);
+    });
+
+    updateUserWithFullInfo.use(async (user) =>
+    {
+        return ApiUpdateUserWithFullInfo(user);
     });
 }
 

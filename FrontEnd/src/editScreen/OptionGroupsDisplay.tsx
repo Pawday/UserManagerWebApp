@@ -19,7 +19,7 @@ type OptionDisplayCallbacksType =
     callbackOptionDeselect: OptionDeselectCallback
 }
 
-export function OptionGroupsDisplay(props: {optionGroups: Array<OptionGroupWithOptions>, callbacks: OptionDisplayCallbacksType})
+export function OptionGroupsDisplay(props: {disabled?: boolean, optionGroups: Array<OptionGroupWithOptions>, callbacks: OptionDisplayCallbacksType})
 {
     const groups = props.optionGroups;
     const allOptions = groups.map((optionGroup) =>
@@ -32,6 +32,7 @@ export function OptionGroupsDisplay(props: {optionGroups: Array<OptionGroupWithO
                     return <FormControlLabel key={option.optionID}
                         control=
                             {<Checkbox
+                                disabled={props.disabled}
                                 onChange={(e) =>
                                 {
                                     if (e.target.checked)

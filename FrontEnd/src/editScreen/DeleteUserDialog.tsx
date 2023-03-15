@@ -4,7 +4,7 @@ import {EditScreenState, editScreenStateStore, userInDialogStore} from "./EditSc
 
 import {Box, Button, Typography} from "@mui/material";
 import {useStore} from "effector-react";
-import {createEvent, createStore, forward, sample} from "effector";
+import {createEvent, createStore, forward, guard, sample} from "effector";
 import {userDeleteFx, userPreviewsLoadFx} from "../api/APIEffects";
 import {UserRequiredData} from "../api/ApiTypes";
 
@@ -47,10 +47,13 @@ deleteDialogErrorMessageStore.on(userDeleteFx.doneData, (state, serverResp) =>
     if (!serverResp)
         return "Не получилось удалить пользователя, вероятно был предоставлен неверный userID";
 
-    exitUserDeletionDialog();
-
-
     return null;
+});
+
+guard({
+    source: userDeleteFx.doneData,
+    filter: (serverResp) => serverResp,
+    target: exitUserDeletionDialog
 });
 
 

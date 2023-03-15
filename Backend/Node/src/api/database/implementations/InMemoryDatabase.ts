@@ -385,6 +385,32 @@ export class InMemoryDatabase implements IDatabase
         return true;
     }
 
+    async UnbindOptionFromUser(optionID: InMemoryDBEntityId, userID: InMemoryDBEntityId): Promise<boolean>
+    {
+        if (this._options.length <= optionID.id)
+            return false;
+        if (this._users.length <= userID.id)
+            return false;
+
+        if(await this.CheckUserDeleted(userID))
+            return false;
+
+        let opToUsrPairIndex = this._optionToUserMap.findIndex(opToUsrPair =>
+        {
+            return (opToUsrPair[0] === optionID) && (opToUsrPair[1] === userID);
+        });
+
+        if (opToUsrPairIndex === -1)
+            return false;
+
+        this._optionToUserMap[opToUsrPairIndex][0].id = -1;
+        this._optionToUserMap[opToUsrPairIndex][1].id = -1;
+
+        return true;
+    }
+
+
+
     async GetUserOptionsIDsByUserId(userID: InMemoryDBEntityId): Promise<DBEntityID[] | null>
     {
         if (this._users.length <= userID.id)

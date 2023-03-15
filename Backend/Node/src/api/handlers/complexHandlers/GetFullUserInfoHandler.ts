@@ -16,12 +16,7 @@ export async function GetFullUserInfoHandler(req: Request, resp: Response)
 
     let userId = await ValidateUserIDInputAndSendErrorIfNotValid(req, resp);
 
-    if (userId === null)
-    {
-        apiResp.error = new APIError(APIErrorType.INVALID_INPUT, "User id not valid");
-        apiResp.SendTo(resp);
-        return;
-    }
+    if (userId === null) return;
 
     let user = await APIDatabase().GetUserById(userId);
 

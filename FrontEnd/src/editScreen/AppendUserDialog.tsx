@@ -63,7 +63,7 @@ const userAboutStringStore = createStore<string | null>(null)
     .on(updateAboutString, (old, payload) => {return payload})
     .on(clearStores, () => {return null});
 
-const requestAllOptionGroupsFromServer = createEvent("request_all_options");
+const requestAllOptionGroupsFromServer = createEvent("request_all_options_for_add_dialog");
 
 allOptionGroupsStore.on(optionsLoadFx.doneData, (oldState, payload) =>
 {

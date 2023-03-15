@@ -323,6 +323,32 @@ export class MongoDatabase implements IDatabase
         return true;
     }
 
+    async UnbindOptionFromUser(optionID: MongoDBEntityID, userID: MongoDBEntityID): Promise<boolean>
+    {
+        let optionToUnbind = await ResolveOrNull(this.OptionModel.findById(optionID.id).exec());
+
+        if (optionToUnbind === null)
+            return false;
+
+        let userWithOptions = await ResolveOrNull(this.UserModel.findById(userID.id, {options: true}).exec());
+
+        if (userWithOptions === null)
+            return false;
+
+        userWithOptions.options = userWithOptions.options.filter((option) =>
+        {
+            return option.id !== optionToUnbind!.id;
+        });
+
+        const updatedUser = await ResolveOrNull(userWithOptions.save())
+
+        if (updatedUser === null)
+            return false;
+
+        return true;
+    }
+
+
     async BindUserInfoToUser(userId: MongoDBEntityID, userInfoID: MongoDBEntityID): Promise<boolean>
     {
         let userBindTo = await ResolveOrNull(this.UserModel.findById(userId.id).exec());
