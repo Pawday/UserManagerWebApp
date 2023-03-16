@@ -19,7 +19,7 @@ node build/Main.js mongodb://<mongoIPAddres>:<mongoPort>/<dbname>
 
 ---
 
-По умолчанию в бязе не буде опций, их можно добавить произведя запрос на сервер вида:
+По умолчанию в базе не буде опций, их можно добавить произведя запрос на сервер вида:
 
 ```http request
 POST http://localhost:3000/api/db/init
